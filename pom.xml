@@ -1,0 +1,65 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.sinmn.iweb</groupId>
+  <artifactId>sinmn-iweb-auth</artifactId>
+  <url>https://github.com/sinmn/sinmn-iweb-auth</url> 
+  
+   <parent>
+		<groupId>com.sinmn</groupId>
+		<artifactId>sinmn-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+  	</parent>
+  
+	<dependencies>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<scope>provided</scope>
+			<version>1.2.17</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.sinmn.core</groupId>
+			<artifactId>sinmn-core-utils</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.sinmn.core</groupId>
+			<artifactId>sinmn-core-model</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		
+		<!-- lombok start -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+		 <!-- lombok end -->
+		
+	</dependencies>
+	
+		
+   <build>  
+	    <plugins>  
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<encoding>utf-8</encoding>
+					<source>1.6</source>
+					<target>1.6</target>
+					<meminitial>128m</meminitial>
+					<maxmem>512m</maxmem>
+				</configuration>
+			</plugin>
+	    </plugins>  
+	</build>
+</project>
