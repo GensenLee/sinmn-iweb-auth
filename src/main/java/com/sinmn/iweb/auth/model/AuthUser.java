@@ -30,6 +30,8 @@ public class AuthUser extends BaseBean{
 	public static final String COMPANY_ID = "company_id";
 	/** 账号 */
 	public static final String ACCOUNT = "account";
+	/** 邮箱 */
+	public static final String EMAIL = "email";
 	/** 原始账号 */
 	public static final String ORG_ACCOUNT = "org_account";
 	/** 名字 */
@@ -68,6 +70,10 @@ public class AuthUser extends BaseBean{
 	@Column(name = "org_account",jdbcType="varchar(200)",notNull=true,def="''",comment="原始账号")
 	@VerifyField("原始账号")
 	private String orgAccount;
+	
+	@Column(name = "email",jdbcType="varchar(200)",notNull=true,def="''",comment="邮箱")
+	@VerifyField("邮箱")
+	private String email;
 	
 	@Column(name = "name",jdbcType="varchar(100)",notNull=true,def="''",comment="名字")
 	@VerifyField("名字")

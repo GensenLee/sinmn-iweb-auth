@@ -73,7 +73,6 @@ public class AuthCompany extends BaseBean{
 		
 	}
 	
-	
 	public AuthCompany(String name, String shortName, String account) {
 		super();
 		this.name = name;

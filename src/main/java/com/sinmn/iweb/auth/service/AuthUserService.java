@@ -106,13 +106,16 @@ public class AuthUserService {
 		//登录成功,插入登录日志
 		AuthLoginLog authLoginLog = new AuthLoginLog();
 		
-		AuthUser authUser = authUserRepository.where(AuthUser.ACCOUNT,authLoginInVO.getAccount()).get();
+		AuthUser authUser = authUserRepository
+				.where(AuthUser.ACCOUNT,authLoginInVO.getAccount())
+				.or(AuthUser.EMAIL,authLoginInVO.getAccount())
+				.get();
 		
 		if(authUser == null){
 			throw new CommonException("账号错误");
 		}
 		
-		if(authUser.getIsActive() == 0){
+		if(authUser.getIsActive() == AuthConstant.Common.NO){
 			throw new CommonException("账号已经被冻结，请联系管理员激活账号");
 		}
 		
@@ -126,12 +129,15 @@ public class AuthUserService {
 		authLoginLog.setTargetIp(targetIp);
 		authLoginLog.setUserId(authUser.getId());
 		authLoginLog.setIp(IPUtil.getIpAddr(req));
-		authLoginLog.setAccount(authUser.getAccount());
+		authLoginLog.setAccount(authLoginInVO.getAccount());
 		authLoginLog.setAddress(IPUtil.getIpRealAddr(authLoginLog.getIp()));
 		
 		if(!PasswdUtil.getPasswd(authLoginInVO.getPasswd(), authUser.getPasswdSuffix()).equals(authUser.getPasswd())){
 			authUser.setTryCount(authUser.getTryCount() + 1);
-			authUserRepository.include(AuthUser.TRY_COUNT).update(authUser);
+			if(authUser.getTryCount() >= 6){
+				authUser.setIsActive(AuthConstant.Common.NO);
+			}
+			authUserRepository.include(AuthUser.TRY_COUNT,AuthUser.IS_ACTIVE).update(authUser);
 			String message = "";
 			if(authUser.getTryCount() > 2){
 				message = String.format("输入错误 %d 次,你还有 %d 次机会",authUser.getTryCount(), 6-authUser.getTryCount());
@@ -198,13 +204,18 @@ public class AuthUserService {
 					.where(AuthUser.ORG_ACCOUNT,authUser.getOrgAccount())
 					.where(AuthUser.COMPANY_ID,authUser.getCompanyId())
 					.where(AuthUser.ID,authUser.getId(),ModelOperator.NEQ).isExists()){
-				throw new CommonException("已经存在相同的账号");
+				throw new CommonException("账号已经被占用");
+			}
+			if(authUserRepository
+					.where(AuthUser.EMAIL,authUser.getEmail())
+					.where(AuthUser.ID,authUser.getId(),ModelOperator.NEQ).isExists()){
+				throw new CommonException("邮箱已经被占用");
 			}
 			if(authUserRepository
 					.where(AuthUser.NAME,authUser.getName())
 					.where(AuthUser.COMPANY_ID,authUser.getCompanyId())
 					.where(AuthUser.ID,authUser.getId(),ModelOperator.NEQ).isExists()){
-				throw new CommonException("已经存在相同的名字");
+				throw new CommonException("名字已经被占用");
 			}
 			BeanUtil.initModify(authUser, userInfoInnerVO.getUserName());
 		}else{
@@ -212,13 +223,18 @@ public class AuthUserService {
 					.where(AuthUser.ORG_ACCOUNT,authUser.getOrgAccount())
 					.where(AuthUser.COMPANY_ID,authUser.getCompanyId())
 					.isExists()){
-				throw new CommonException("已经存在相同的账号");
+				throw new CommonException("账号已经被占用");
+			}
+			if(authUserRepository
+					.where(AuthUser.EMAIL,authUser.getEmail())
+					.isExists()){
+				throw new CommonException("邮箱已经被占用");
 			}
 			if(authUserRepository
 					.where(AuthUser.NAME,authUser.getName())
 					.where(AuthUser.COMPANY_ID,authUser.getCompanyId())
 					.isExists()){
-				throw new CommonException("已经存在相同的名字");
+				throw new CommonException("名字已经被占用");
 			}
 			BeanUtil.initCreate(authUser, userInfoInnerVO.getUserName());
 		}
@@ -229,7 +245,12 @@ public class AuthUserService {
 		}
 		
 		if(authUser.getCompanyId() == -1){
-			authUser.setAccount(authUser.getOrgAccount()+"@admin");
+			AuthUser admin = authUserRepository.where(AuthUser.COMPANY_ID,-1).where(AuthUser.IS_ADMIN,AuthConstant.Common.YES).get();
+			String account = "admin";
+			if(admin != null){
+				account = admin.getOrgAccount();
+			}
+			authUser.setAccount(authUser.getOrgAccount()+"@"+account);
 		}else{
 			AuthCompany authCompany = authCompanyRepository.where(AuthCompany.ID,authUser.getCompanyId()).get();
 			if(authCompany != null && StringUtil.isNotEmpty(authCompany.getAccount())){
@@ -253,6 +274,10 @@ public class AuthUserService {
 		
 		if(authUser.getTryCount() >= 6){
 			throw new CommonException("密码输入错误次数过多，账号已经被封停，请联系系统管理人员解封");
+		}
+		
+		if(authUser.getIsActive() == AuthConstant.Common.NO){
+			throw new CommonException("账号已经被冻结，请联系管理员激活账号");
 		}
 		
 		if(!authUser.getPasswd().equals(PasswdUtil.getPasswd(authUserRepasswdInVO.getPasswd(), authUser.getPasswdSuffix()))){
@@ -281,7 +306,10 @@ public class AuthUserService {
 		if(orgAuthUser == null || orgAuthUser.getIsAdmin() == AuthConstant.Common.YES){
 			throw new CommonException("无此用户权限");
 		}
-		authUserRepository.include(AuthUser.IS_ACTIVE).save(authUser);
+		authUser.setTryCount(0);
+		authUserRepository
+		.include(AuthUser.IS_ACTIVE,AuthUser.TRY_COUNT)
+		.save(authUser);
 		return authUser;
 	}
 }
