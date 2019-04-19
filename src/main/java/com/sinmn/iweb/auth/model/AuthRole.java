@@ -1,41 +1,41 @@
 package com.sinmn.iweb.auth.model;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import com.sinmn.core.model.annotation.Column;
 import com.sinmn.core.model.annotation.Table;
-import com.sinmn.core.utils.verify.VerifyField;
 import com.sinmn.core.utils.vo.BaseBean;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import java.util.Date;
 
-@Table(value = "auth_app_user_instance",create=true,comment="用户应用实例")
+@Table(value="auth_role",create=true,comment="用户角色")
 @Data
 @EqualsAndHashCode(callSuper=false)
-public class AuthAppUserInstance extends BaseBean{
-	
+@ApiModel(value = "用户角色",description="用户角色")
+public class AuthRole extends BaseBean{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
 	/** 流水号 */
 	public static final String ID = "id";
 	/** 应用id */
 	public static final String APP_ID = "app_id";
-	/** 应用实例id */
-	public static final String APP_INSTANCE_ID = "app_instance_id";
 	/** 集团id */
 	public static final String COMPANY_ID = "company_id";
-	/** 用户id */
-	public static final String USER_ID = "user_id";
-	/** 角色ID */
-	public static final String ROLE_ID = "role_id";
+	/** 角色名字 */
+	public static final String NAME = "name";
+	/** 角色编码 */
+	public static final String CODE = "code";
 	/** 系统管理员，默认拥有所有的菜单 */
 	public static final String IS_ADMIN = "is_admin";
-	/** 是否能被修改 */
+	/** 是否能被修改 0否 1是 */
 	public static final String IS_EDIT = "is_edit";
 	/** 删除标志位 0未删除 1删除 */
 	public static final String DEL_FLAG = "del_flag";
@@ -48,78 +48,70 @@ public class AuthAppUserInstance extends BaseBean{
 	/** 最后修改时间 */
 	public static final String MODIFY_TIME = "modify_time";
 
-	@Column(name = "id",jdbcType="bigint(20)",priKey=true,autoIncrement=true,comment="流水号")
-	@VerifyField(ignore = true)
-	private Long id;
-	
-	@Column(name = "app_id",jdbcType="bigint(20)",notNull=true,def="0",comment="应用id")
-	private Long appId;
-	
-	@Column(name = "app_instance_id",jdbcType="bigint(20)",notNull=true,def="0",comment="应用实例id")
-	@VerifyField("应用实例id")
-	private Long appInstanceId;
-	
-	@Column(name = "company_id",jdbcType="bigint(20)",notNull=true,def="0",comment="集团id")
-	private Long companyId;
-	
-	@Column(name = "user_id",jdbcType="bigint(20)",notNull=true,def="0",comment="用户id")
-	@VerifyField("用户id")
-	private Long userId;
-	
-	@Column(name = "role_id",jdbcType="bigint(20)",notNull=true,def="0",comment="角色id")
-	@VerifyField("角色id")
-	private Long roleId;
-	
-	@Column(name = "is_admin",jdbcType="tinyint(3)",notNull=true,def="0",comment="系统管理员，默认拥有所有的菜单")
-	private Integer isAdmin;
-	
-	@Column(name = "is_edit",jdbcType="tinyint(3)",notNull=true,def="1",comment="是否能被修改 0否 1是")
-	private Integer isEdit;
-	
-	@Column(name = "del_flag",jdbcType="tinyint(3)",notNull=true,def="0",comment="删除标志位 0未删除 1删除")
-	private Integer delFlag;
-	
-	@Column(name = "create_name",jdbcType="varchar(50)",notNull=true,def="''",comment="创建人")
-	@VerifyField(ignore = true)
-	private String createName;
-	
-	@Column(name = "create_time",jdbcType="datetime",notNull=true,def="",comment="创建时间")
-	@VerifyField(ignore = true)
-	private Date createTime;
-	
-	@Column(name = "modify_name",jdbcType="varchar(50)",notNull=true,def="''",comment="最后修改人")
-	@VerifyField(ignore = true)
-	private String modifyName;
-	
-	@Column(name = "modify_time",jdbcType="datetime",notNull=true,def="",comment="最后修改时间")
-	@VerifyField(ignore = true)
-	private Date modifyTime;
-	
 	@SuppressWarnings("serial")
-	public static List<AuthAppUserInstance> init(){
-		final Date now = new Date();
-		return new ArrayList<AuthAppUserInstance>(){{
-			add(new AuthAppUserInstance(1L,1L,-1L,1L,1,0,0,"system",now,"system",now));
+	public static List<AuthRole> init(){
+		return new ArrayList<AuthRole>(){{
 		}};
 	}
-	public AuthAppUserInstance(){
-		
-	}
 	
-	public AuthAppUserInstance(Long appId, Long appInstanceId, Long companyId, Long userId, Integer isAdmin,
-			Integer isEdit,Integer delFlag, String createName, Date createTime, String modifyName, Date modifyTime) {
-		super();
-		this.appId = appId;
-		this.appInstanceId = appInstanceId;
-		this.companyId = companyId;
-		this.userId = userId;
-		this.isAdmin = isAdmin;
-		this.isEdit = isEdit;
-		this.delFlag = delFlag;
-		this.createName = createName;
-		this.createTime = createTime;
-		this.modifyName = modifyName;
-		this.modifyTime = modifyTime;
-	}
-	
+    	/** 流水号 */
+	@Column(name = "id",jdbcType="bigint(20)",priKey=true,autoIncrement=true, comment="流水号")
+	@ApiModelProperty("流水号")
+	private Long id;
+    
+    	/** 应用id */
+	@Column(name = "app_id",jdbcType="bigint(20)",notNull=true,def="0",comment="应用id")
+	@ApiModelProperty("应用id")
+	private Long appId;
+    
+    	/** 集团id */
+	@Column(name = "company_id",jdbcType="bigint(20)",notNull=true,def="0",comment="集团id")
+	@ApiModelProperty("集团id")
+	private Long companyId;
+    
+    	/** 角色名字 */
+	@Column(name = "name",jdbcType="varchar(100)",notNull=true,def="''",comment="角色名字")
+	@ApiModelProperty("角色名字")
+	private String name;
+    
+    	/** 角色编码 */
+	@Column(name = "code",jdbcType="varchar(100)",notNull=true,def="''",comment="角色编码")
+	@ApiModelProperty("角色编码")
+	private String code;
+    
+    	/** 系统管理员，默认拥有所有的菜单 */
+	@Column(name = "is_admin",jdbcType="tinyint(3)",notNull=true,def="0",comment="系统管理员，默认拥有所有的菜单")
+	@ApiModelProperty("系统管理员，默认拥有所有的菜单")
+	private Byte isAdmin;
+    
+    	/** 是否能被修改 0否 1是 */
+	@Column(name = "is_edit",jdbcType="tinyint(3)",notNull=true,def="1",comment="是否能被修改 0否 1是")
+	@ApiModelProperty("是否能被修改 0否 1是")
+	private Byte isEdit;
+    
+    	/** 删除标志位 0未删除 1删除 */
+	@Column(name = "del_flag",jdbcType="tinyint(3)",notNull=true,def="0",comment="删除标志位 0未删除 1删除")
+	@ApiModelProperty("删除标志位 0未删除 1删除")
+	private Byte delFlag;
+    
+    	/** 创建人 */
+	@Column(name = "create_name",jdbcType="varchar(50)",notNull=true,def="''",comment="创建人")
+	@ApiModelProperty("创建人")
+	private String createName;
+    
+    	/** 创建时间 */
+	@Column(name = "create_time",jdbcType="datetime",notNull=true,def="",comment="创建时间")
+	@ApiModelProperty("创建时间")
+	private Date createTime;
+    
+    	/** 最后修改人 */
+	@Column(name = "modify_name",jdbcType="varchar(50)",notNull=true,def="''",comment="最后修改人")
+	@ApiModelProperty("最后修改人")
+	private String modifyName;
+    
+    	/** 最后修改时间 */
+	@Column(name = "modify_time",jdbcType="datetime",notNull=true,def="",comment="最后修改时间")
+	@ApiModelProperty("最后修改时间")
+	private Date modifyTime;
+    
 }

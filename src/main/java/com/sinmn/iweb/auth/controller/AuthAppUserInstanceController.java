@@ -58,6 +58,14 @@ public class AuthAppUserInstanceController {
 		return ApiResult.getSuccess(authAppUserInstanceService.save(authAppUserInstanceSaveInVO,AuthContext.getUserInfoInnerVO()));
 	}
 	
+	@RequestMapping(path ="/admin/auth/instance/authAppUserInstance/saveByRole.do",method = {RequestMethod.POST})
+	@AuthResource(parent="用户实例",name="根据角色保存",type=AuthResource.BUTTON)
+	public ApiResult<Object> saveByRole(@RequestBody AuthAppUserInstanceSaveInVO authAppUserInstanceSaveInVO)
+			throws CommonException
+	{
+		return ApiResult.getSuccess(authAppUserInstanceService.saveByRole(authAppUserInstanceSaveInVO,AuthContext.getUserInfoInnerVO()));
+	}
+	
 	@RequestMapping(path ="/admin/auth/instance/authAppUserInstance/get.do")
 	public ApiResult<Object> get(Long id)
 			throws CommonException

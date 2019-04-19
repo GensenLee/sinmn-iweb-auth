@@ -23,12 +23,15 @@ import com.sinmn.iweb.auth.model.AuthAppUserInstance;
 import com.sinmn.iweb.auth.model.AuthAppUserInstanceMenu;
 import com.sinmn.iweb.auth.model.AuthMenu;
 import com.sinmn.iweb.auth.model.AuthResources;
-import com.sinmn.iweb.auth.model.AuthUser;
+import com.sinmn.iweb.auth.model.AuthRole;
+import com.sinmn.iweb.auth.model.AuthRoleMenu;
 import com.sinmn.iweb.auth.repository.AuthAppInstanceRepository;
 import com.sinmn.iweb.auth.repository.AuthAppUserInstanceMenuRepository;
 import com.sinmn.iweb.auth.repository.AuthAppUserInstanceRepository;
 import com.sinmn.iweb.auth.repository.AuthMenuRepository;
 import com.sinmn.iweb.auth.repository.AuthResourcesRepository;
+import com.sinmn.iweb.auth.repository.AuthRoleMenuRepository;
+import com.sinmn.iweb.auth.repository.AuthRoleRepository;
 import com.sinmn.iweb.auth.repository.AuthUserRepository;
 import com.sinmn.iweb.auth.vo.inVO.AuthMenuSaveInVO;
 import com.sinmn.iweb.auth.vo.innerVO.UserInfoInnerVO;
@@ -48,6 +51,12 @@ public class AuthMenuService {
 	
 	@Autowired
 	private AuthAppUserInstanceMenuRepository authAppUserInstanceMenuRepository;
+	
+	@Autowired
+	private AuthRoleRepository authRoleRepository;
+	
+	@Autowired
+	private AuthRoleMenuRepository authRoleMenuRepository;
 	
 	@Autowired
 	private AuthUserRepository authUserRepository;
@@ -90,14 +99,24 @@ public class AuthMenuService {
 	
 	public Object listUserMenu(Long userId,Long userInstanceId){
 		
-		AuthUser authUser = authUserRepository.exclude(AuthConstant.Common.EXCLUDE_FIELDS).get(userId);
+		//AuthUser authUser = authUserRepository.exclude(AuthConstant.Common.EXCLUDE_FIELDS).get(userId);
 		
 		AuthAppUserInstance authAppUserInstance = authAppUserInstanceRepository.get(userInstanceId);
 		List<AuthMenu> liAuthMenu = new ArrayList<AuthMenu>();
 		
 		Set<String> stResourceIds = new HashSet<String>();
 		
-		if(authAppUserInstance.getIsAdmin().equals(AuthConstant.Common.YES)){
+		Integer isAdmin = authAppUserInstance.getIsAdmin();
+		
+		if(LongUtil.isNotZero(authAppUserInstance.getRoleId())){
+			//如果有角色，以角色为主
+			AuthRole authRole = authRoleRepository.get(authAppUserInstance.getRoleId());
+			isAdmin = (int)authRole.getIsAdmin();
+		}
+		
+		
+		
+		if(isAdmin.equals(AuthConstant.Common.YES)){
 			//如果是管理员，获取所有的菜单
 			liAuthMenu = authMenuRepository
 					.where(AuthMenu.APP_ID,authAppUserInstance.getAppId())
@@ -114,18 +133,38 @@ public class AuthMenuService {
 			}
 			
 		}else{
-			List<AuthAppUserInstanceMenu> liAuthAppUserInstanceMenu = authAppUserInstanceMenuRepository
-					.where(AuthAppUserInstanceMenu.APP_USER_INSTANCE_ID,userInstanceId).list();
-			List<Long> ids = ListUtil.toLongList(liAuthAppUserInstanceMenu, AuthAppUserInstanceMenu.MENU_ID);
-			if(!ids.isEmpty()){
-				for(AuthAppUserInstanceMenu authAppUserInstanceMenu : liAuthAppUserInstanceMenu){
-					if(StringUtil.isNotEmpty(authAppUserInstanceMenu.getResources())){
-						String resource = authAppUserInstanceMenu.getResources().replaceAll("^,", "").replaceAll(",$", "");
-						for(String r : resource.split(",")){
-							stResourceIds.add(r);
+			List<Long> ids = new ArrayList<Long>();
+			if(LongUtil.isNotZero(authAppUserInstance.getRoleId())){
+				List<AuthRoleMenu> liAuthRoleMenu = authRoleMenuRepository
+						.where(AuthRoleMenu.ROLE_ID,authAppUserInstance.getRoleId()).list();
+				ids = ListUtil.toLongList(liAuthRoleMenu, AuthRoleMenu.MENU_ID);
+				if(!ids.isEmpty()){
+					for(AuthRoleMenu authRoleMenu : liAuthRoleMenu){
+						if(StringUtil.isNotEmpty(authRoleMenu.getResources())){
+							String resource = authRoleMenu.getResources().replaceAll("^,", "").replaceAll(",$", "");
+							for(String r : resource.split(",")){
+								stResourceIds.add(r);
+							}
 						}
 					}
 				}
+				
+			}else{
+				List<AuthAppUserInstanceMenu> liAuthAppUserInstanceMenu = authAppUserInstanceMenuRepository
+						.where(AuthAppUserInstanceMenu.APP_USER_INSTANCE_ID,userInstanceId).list();
+				ids = ListUtil.toLongList(liAuthAppUserInstanceMenu, AuthAppUserInstanceMenu.MENU_ID);
+				if(!ids.isEmpty()){
+					for(AuthAppUserInstanceMenu authAppUserInstanceMenu : liAuthAppUserInstanceMenu){
+						if(StringUtil.isNotEmpty(authAppUserInstanceMenu.getResources())){
+							String resource = authAppUserInstanceMenu.getResources().replaceAll("^,", "").replaceAll(",$", "");
+							for(String r : resource.split(",")){
+								stResourceIds.add(r);
+							}
+						}
+					}
+				}
+			}
+			if(!ids.isEmpty()){
 				liAuthMenu = authMenuRepository
 						.where(AuthMenu.APP_ID,authAppUserInstance.getAppId())
 						.where(AuthMenu.ID,ids,ModelOperator.IN)

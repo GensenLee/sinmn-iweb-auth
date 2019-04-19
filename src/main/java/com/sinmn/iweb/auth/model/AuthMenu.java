@@ -42,6 +42,8 @@ public class AuthMenu extends BaseBean{
 	public static final String DEL_FLAG = "del_flag";
 	/** 扩展字段 */
 	public static final String EXT = "ext";
+	/** 显示对应的表达式 */
+	public static final String SHOW_REG = "show_reg";
 	/** 是否系统默认 0否 1是 */
 	public static final String IS_SYSTEM = "is_system";
 	/** 排序，从小到大 */
@@ -76,6 +78,9 @@ public class AuthMenu extends BaseBean{
 	
 	@Column(name = "ext",jdbcType="varchar(500)",notNull=true,def="''",comment="扩展字段")
 	private String ext;
+	
+	@Column(name = "show_reg",jdbcType="varchar(1000)",notNull=true,def="''",comment="显示对应的表达式")
+	private String showReg;
 	
 	@Column(name = "resources",jdbcType="varchar(500)",notNull=true,def="''",comment="资源，前后都有逗号")
 	private String resources;
@@ -133,16 +138,21 @@ public class AuthMenu extends BaseBean{
 			add(new AuthMenu(1L,"用户列表","/auth-user/list",2L,",1,2,","default",1,0,1,0f,"system",now,"system",now));
 			
 			//8
-			add(new AuthMenu(1L,"集团列表","/auth-company/list",2L,",1,2,","default",1,0,1,0f,"system",now,"system",now));
-
+			add(new AuthMenu(1L,"角色列表","/auth-role/list",2L,",1,2,","default",1,0,1,0f,"system",now,"system",now));
+			
 			//9
-			add(new AuthMenu(1L,"参数设置","/auth-config/list",0L,"","default",1,0,1,0f,"system",now,"system",now));
+			add(new AuthMenu(1L,"集团列表","/auth-company/list",2L,",1,2,","default",1,0,1,0f,"system",now,"system",now));
+			
 			//10
-			add(new AuthMenu(1L,"参数设置","#",9L,",9,","default",1,0,1,0f,"system",now,"system",now));
-			//11
-			add(new AuthMenu(1L,"参数列表","/auth-config/list",10L,",9,10，","default",1,0,1,0f,"system",now,"system",now));
-			//12
 			add(new AuthMenu(1L,"登录日志","/auth-login-log/list",2L,",1,2,","default",1,0,1,0f,"system",now,"system",now));
+
+			//11
+			add(new AuthMenu(1L,"参数设置","/auth-config/list",0L,"","default",1,0,1,0f,"system",now,"system",now));
+			//12
+			add(new AuthMenu(1L,"参数设置","#",11L,",11,","default",1,0,1,0f,"system",now,"system",now));
+			//13
+			add(new AuthMenu(1L,"参数列表","/auth-config/list",12L,",11,12，","default",1,0,1,0f,"system",now,"system",now));
+			
 
 			
 		}};

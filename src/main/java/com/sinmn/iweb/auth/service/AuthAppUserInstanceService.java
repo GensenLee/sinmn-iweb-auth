@@ -24,11 +24,13 @@ import com.sinmn.iweb.auth.model.AuthApp;
 import com.sinmn.iweb.auth.model.AuthAppInstance;
 import com.sinmn.iweb.auth.model.AuthAppUserInstance;
 import com.sinmn.iweb.auth.model.AuthAppUserInstanceMenu;
+import com.sinmn.iweb.auth.model.AuthRole;
 import com.sinmn.iweb.auth.model.AuthUser;
 import com.sinmn.iweb.auth.repository.AuthAppInstanceRepository;
 import com.sinmn.iweb.auth.repository.AuthAppRepository;
 import com.sinmn.iweb.auth.repository.AuthAppUserInstanceMenuRepository;
 import com.sinmn.iweb.auth.repository.AuthAppUserInstanceRepository;
+import com.sinmn.iweb.auth.repository.AuthRoleRepository;
 import com.sinmn.iweb.auth.repository.AuthUserRepository;
 import com.sinmn.iweb.auth.vo.inVO.AuthAppUserInstanceSaveInVO;
 import com.sinmn.iweb.auth.vo.inVO.AuthToInstanceInVO;
@@ -50,6 +52,10 @@ public class AuthAppUserInstanceService {
 	@Autowired
 	private AuthUserRepository authUserRepository;
 	
+	
+	@Autowired
+	private AuthRoleRepository authRoleRepository;
+	
 	@Autowired
 	private AuthAppUserInstanceMenuRepository authAppUserInstanceMenuRepository;
 	
@@ -68,12 +74,12 @@ public class AuthAppUserInstanceService {
 		}
 		
 		List<Map> mapResult = authAppInstanceRepository.join(liAuthAppUserInstance,
-				AuthAppUserInstance.APP_INSTANCE_ID,AuthAppInstance.ID,
+				StringUtil.toLHCase(AuthAppUserInstance.APP_INSTANCE_ID),AuthAppInstance.ID,
 				AuthAppInstance.NAME,"appInstanceName")
 				.list(Map.class);
 		
 		mapResult = authAppRepository.join(mapResult,
-				AuthAppUserInstance.APP_ID,AuthAppInstance.ID,
+				StringUtil.toLHCase(AuthAppUserInstance.APP_ID),AuthAppInstance.ID,
 				AuthApp.CN_NAME,"appName",
 				AuthApp.URL,"url")
 				.list(Map.class);
@@ -99,7 +105,7 @@ public class AuthAppUserInstanceService {
 		}
 		
 		List<Map> mapResult = authAppInstanceRepository.join(liAuthAppUserInstance,
-				AuthAppUserInstance.APP_INSTANCE_ID,AuthAppInstance.ID,
+				StringUtil.toLHCase(AuthAppUserInstance.APP_INSTANCE_ID),AuthAppInstance.ID,
 				AuthAppInstance.NAME,"appInstanceName")
 				.list(Map.class);
 		
@@ -107,6 +113,11 @@ public class AuthAppUserInstanceService {
 				StringUtil.toLHCase(AuthAppUserInstance.APP_ID),AuthApp.ID,
 				AuthApp.CN_NAME,"appName",
 				AuthApp.URL,"url")
+				.list(Map.class);
+		
+		mapResult = authRoleRepository.join(mapResult,
+				StringUtil.toLHCase(AuthAppUserInstance.ROLE_ID),AuthRole.ID,
+				AuthRole.NAME,"roleName")
 				.list(Map.class);
 		
 		pageResult.setList(MapUtil.toMapListResultExclude(mapResult,"isAdmin"));
@@ -182,6 +193,43 @@ public class AuthAppUserInstanceService {
 		
 		return null;
 	}
+	
+	
+	public Object saveByRole(AuthAppUserInstanceSaveInVO authAppUserInstanceSaveInVO,UserInfoInnerVO userInfoInnerVO)
+			throws CommonException
+		{
+			VerifyUtil.verify(authAppUserInstanceSaveInVO,
+					AuthAppUserInstance.USER_ID,AuthAppUserInstance.APP_INSTANCE_ID,AuthAppUserInstance.ROLE_ID);
+			if(LongUtil.isNotZero(authAppUserInstanceSaveInVO.getId())){
+				BeanUtil.initModify(authAppUserInstanceSaveInVO, userInfoInnerVO.getUserName());
+				AuthAppUserInstance authAppUserInstance = authAppUserInstanceRepository
+						.where(AuthAppUserInstance.APP_INSTANCE_ID,authAppUserInstanceSaveInVO.getAppInstanceId())
+						.where(AuthAppUserInstance.COMPANY_ID,authAppUserInstanceSaveInVO.getCompanyId())
+						.where(AuthAppUserInstance.USER_ID,authAppUserInstanceSaveInVO.getUserId())
+						.get(authAppUserInstanceSaveInVO.getId());
+				if(authAppUserInstance == null || LongUtil.toLong(authAppUserInstance.getCompanyId()) != userInfoInnerVO.getCompanyId()){
+					throw new CommonException("无此用户实例权限");
+				}
+				if(authAppUserInstance.getIsEdit() == AuthConstant.Common.NO){
+					throw new CommonException("此实例不能被修改");
+				}
+				authAppUserInstanceRepository.update(authAppUserInstanceSaveInVO);
+			}else{
+				BeanUtil.initCreate(authAppUserInstanceSaveInVO, userInfoInnerVO.getUserName());
+				authAppUserInstanceSaveInVO.setCompanyId(userInfoInnerVO.getCompanyId());
+				AuthAppInstance authAppInstance = authAppInstanceRepository
+						.where(AuthAppUserInstance.COMPANY_ID,authAppUserInstanceSaveInVO.getCompanyId())
+						.where(AuthAppInstance.ID,authAppUserInstanceSaveInVO.getAppInstanceId()).get();
+				if(authAppInstance == null || authUserRepository
+						.where(AuthUser.COMPANY_ID,authAppUserInstanceSaveInVO.getCompanyId())
+						.isNotExists(authAppUserInstanceSaveInVO.getUserId())){
+					throw new CommonException("无此用户实例权限");
+				}
+				authAppUserInstanceSaveInVO.setAppId(authAppInstance.getAppId());
+				authAppUserInstanceRepository.insert(authAppUserInstanceSaveInVO);
+			}
+			return null;
+		}
 	
 	public Object get(Long id,UserInfoInnerVO userInfoInnerVO) throws CommonException{
 		AuthAppUserInstance authAppUserInstance = authAppUserInstanceRepository
