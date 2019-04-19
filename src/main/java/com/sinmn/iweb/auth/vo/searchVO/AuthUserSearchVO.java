@@ -7,4 +7,5 @@ import lombok.Data;
 @Data
 public class AuthUserSearchVO extends BaseSearchVO{
 
+	private Long companyId;
 }

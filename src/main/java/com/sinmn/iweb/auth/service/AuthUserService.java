@@ -80,8 +80,14 @@ public class AuthUserService {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object list(AuthUserSearchVO svo,UserInfoInnerVO userInfoInnerVO) throws CommonException{
 		ModelWhere mw = new ModelWhere();
-		mw.add(AuthUser.COMPANY_ID,userInfoInnerVO.getCompanyId());
+		
 		if(StringUtil.isNotEmpty(svo.getQuickSearch())){
+		}
+		
+		if(LongUtil.isZero(svo.getCompanyId())){
+			mw.add(AuthUser.COMPANY_ID,userInfoInnerVO.getCompanyId());
+		}else if(LongUtil.toLong(svo.getCompanyId()) != AuthConstant.Common.ALL){
+			mw.add(AuthUser.COMPANY_ID,svo.getCompanyId());
 		}
 		
 		List<AuthUser> liAuthUser = authUserRepository.where(mw)

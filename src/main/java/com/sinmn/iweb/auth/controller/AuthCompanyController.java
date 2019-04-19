@@ -29,6 +29,13 @@ public class AuthCompanyController {
 		return ApiResult.getSuccess(authCompanyService.list(svo));
 	}
 	
+	@RequestMapping(path ="/admin/auth/instance/authCompany/listAll.do",method = {RequestMethod.POST})
+	public ApiResult<Object> listAll(@RequestBody AuthCompanySearchVO svo)
+			throws CommonException
+	{
+		return ApiResult.getSuccess(authCompanyService.listAll(svo));
+	}
+	
 	
 	@RequestMapping(path ="/admin/auth/instance/authCompany/save.do",method = {RequestMethod.POST})
 	@AuthResource(parent="集团列表",name="新增保存",type=AuthResource.BUTTON)

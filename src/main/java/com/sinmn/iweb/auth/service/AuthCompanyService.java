@@ -63,6 +63,16 @@ public class AuthCompanyService {
 		return pr;
 	}
 	
+	public Object listAll(AuthCompanySearchVO svo) throws CommonException{
+		
+		ModelWhere mw = new ModelWhere();
+		
+		return authCompanyRepository.where(mw)
+				.orderBy(AuthCompany.ID,"DESC")
+				.limit(svo.getStart(),svo.getSize()).list();
+		
+	}
+	
 	@Transactional
 	public Object save(AuthCompanyInVO authCompanyInVO,UserInfoInnerVO userInfoInnerVO) throws CommonException{
 		

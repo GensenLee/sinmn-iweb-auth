@@ -19,6 +19,11 @@ public class AuthConstant {
 		 */
 		public static final int YES = 1;
 		
+		/**
+		 * 全部
+		 */
+		public static final long ALL = -2;
+		
 		public static final String[] EXCLUDE_FIELDS = new String[]{"create_name","create_time","modify_name","modify_time"};
 		
 	}
