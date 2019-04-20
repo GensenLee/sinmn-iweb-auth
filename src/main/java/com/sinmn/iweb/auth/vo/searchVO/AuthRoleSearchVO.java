@@ -10,4 +10,6 @@ public class AuthRoleSearchVO extends BaseSearchVO{
 	private Long appId;
 	
 	private Long appInstanceId;
+	
+	private Long companyId;
 }

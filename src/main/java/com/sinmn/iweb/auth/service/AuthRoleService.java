@@ -20,7 +20,6 @@ import com.sinmn.core.utils.vo.PageResult;
 import com.sinmn.iweb.auth.constant.AuthConstant;
 import com.sinmn.iweb.auth.model.AuthApp;
 import com.sinmn.iweb.auth.model.AuthAppInstance;
-import com.sinmn.iweb.auth.model.AuthAppUserInstance;
 import com.sinmn.iweb.auth.model.AuthRole;
 import com.sinmn.iweb.auth.model.AuthRoleMenu;
 import com.sinmn.iweb.auth.repository.AuthAppInstanceRepository;
@@ -82,8 +81,13 @@ public class AuthRoleService {
 		
 		ModelWhere mw = new ModelWhere();
 		
-		mw.add(AuthRole.DEL_FLAG,AuthConstant.Common.NO)
-		.add(AuthAppUserInstance.COMPANY_ID,userInfoInnerVO.getCompanyId());
+		mw.add(AuthRole.DEL_FLAG,AuthConstant.Common.NO);
+		
+		if(LongUtil.isZero(svo.getCompanyId())){
+			mw.add(AuthRole.COMPANY_ID,userInfoInnerVO.getCompanyId());
+		}else if(LongUtil.toLong(svo.getCompanyId()) != AuthConstant.Common.ALL){
+			mw.add(AuthRole.COMPANY_ID,svo.getCompanyId());
+		}
 		
 		
 		PageResult pageResult = new PageResult();

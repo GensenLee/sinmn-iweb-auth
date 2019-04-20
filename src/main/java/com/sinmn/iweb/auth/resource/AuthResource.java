@@ -54,4 +54,9 @@ public @interface AuthResource {
 	 * 类型 1链接 2按钮 3无
 	 */
 	int type() default 1;
+	
+	/**
+	 * 忽略跨APP限制，默认不允许跨APP
+	 */
+	boolean ignoreApp() default false;
 }

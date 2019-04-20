@@ -30,17 +30,17 @@ import com.sinmn.iweb.auth.vo.inVO.AuthResourcesSaveInVO;
 public class AuthResourceMain implements InitializingBean{
 	
 	@Autowired
-	private AuthResourcesRepository authResourcesMapperDao;
+	private AuthResourcesRepository authResourcesRepository;
 	
 	@Autowired
-	private AuthAppRepository authAppMapperDao;
+	private AuthAppRepository authAppRepository;
 	
 	private void initData(Map<Long,Map<String,AuthResourcesSaveInVO>> parentMapAuthResourcesInVO){
 		if(parentMapAuthResourcesInVO.isEmpty()){
 			return;
 		}
-		for(Long app_id : parentMapAuthResourcesInVO.keySet()){
-			Map<String,AuthResourcesSaveInVO> mapAuthResourcesInVO = parentMapAuthResourcesInVO.get(app_id); 
+		for(Long appId : parentMapAuthResourcesInVO.keySet()){
+			Map<String,AuthResourcesSaveInVO> mapAuthResourcesInVO = parentMapAuthResourcesInVO.get(appId); 
 			if(mapAuthResourcesInVO == null || mapAuthResourcesInVO.isEmpty()){
 				continue;
 			}
@@ -55,8 +55,8 @@ public class AuthResourceMain implements InitializingBean{
 					}
 				}
 			}
-			List<AuthResources> liAuthResources =  authResourcesMapperDao
-					.where(AuthResources.APP_ID,app_id)
+			List<AuthResources> liAuthResources =  authResourcesRepository
+					.where(AuthResources.APP_ID,appId)
 					.where(AuthResources.NAME,keys,ModelOperator.IN).list();
 			
 			for(AuthResources authResources : liAuthResources){
@@ -89,10 +89,10 @@ public class AuthResourceMain implements InitializingBean{
 				}
 			}
 			if(!insertList.isEmpty()){
-				authResourcesMapperDao.insert(insertList);
+				authResourcesRepository.insert(insertList);
 			}
 			if(!updateList.isEmpty()){
-				authResourcesMapperDao.update(updateList);
+				authResourcesRepository.update(updateList);
 			}
 			insertList.clear();
 			updateList.clear();
@@ -111,11 +111,11 @@ public class AuthResourceMain implements InitializingBean{
 			}
 			
 			if(!insertList.isEmpty()){
-				authResourcesMapperDao.insert(insertList);
+				authResourcesRepository.insert(insertList);
 			}
 			
 			if(!updateList.isEmpty()){
-				authResourcesMapperDao.update(updateList);
+				authResourcesRepository.update(updateList);
 			}
 		}
 	}
@@ -125,7 +125,7 @@ public class AuthResourceMain implements InitializingBean{
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				authResourcesMapperDao.init();
+				authResourcesRepository.init();
 				Map<Long,Map<String,AuthResourcesSaveInVO>> parentMapAuthResourcesInVO = new HashMap<Long,Map<String,AuthResourcesSaveInVO>>();
 				Map<String, Object> beans = SpringContextUtil.getContext().getBeansWithAnnotation(RestController.class);
 				Map<String,AuthApp> cacheAuthApp = new HashMap<String,AuthApp>();
@@ -159,31 +159,31 @@ public class AuthResourceMain implements InitializingBean{
 							if(parentRequestMapping != null){
 								path = parentRequestMapping.path()[0] + path;
 							}
-							long app_id = authResource.appId();
-							if(app_id == -1 && parentAuthResource != null){
-								app_id = parentAuthResource.appId();
+							long appId = authResource.appId();
+							if(appId <= 0 && parentAuthResource != null){
+								appId = parentAuthResource.appId();
 							}
 							if(parentAuthResource != null && StringUtil.isNotEmpty(parentAuthResource.appName())){
 								AuthApp authApp = cacheAuthApp.get(parentAuthResource.appName());
 								if(authApp == null){
-									authApp = authAppMapperDao.where(AuthApp.NAME,parentAuthResource.appName()).get();
+									authApp = authAppRepository.where(AuthApp.NAME,parentAuthResource.appName()).get();
 									cacheAuthApp.put(parentAuthResource.appName(),authApp);
 								}
 								if(authApp != null){
-									app_id = authApp.getId();
+									appId = authApp.getId();
 								}
 							}
-							Map<String,AuthResourcesSaveInVO> mapAuthResourcesInVO = parentMapAuthResourcesInVO.get(app_id);
+							Map<String,AuthResourcesSaveInVO> mapAuthResourcesInVO = parentMapAuthResourcesInVO.get(appId);
 							if(mapAuthResourcesInVO == null){
 								mapAuthResourcesInVO = new HashMap<String,AuthResourcesSaveInVO>();
-								parentMapAuthResourcesInVO.put(app_id, mapAuthResourcesInVO);
+								parentMapAuthResourcesInVO.put(appId, mapAuthResourcesInVO);
 							}
 							AuthResourcesSaveInVO authResourcesInVO = mapAuthResourcesInVO.get(parentName);
 							if(authResourcesInVO == null){
 								authResourcesInVO = new AuthResourcesSaveInVO();
 								authResourcesInVO.setName(parentName);
 								authResourcesInVO.setParentId(0L);
-								authResourcesInVO.setAppId(app_id);
+								authResourcesInVO.setAppId(appId);
 								authResourcesInVO.setType(AuthConstant.ResourcesType.NONE);
 								mapAuthResourcesInVO.put(parentName, authResourcesInVO);
 							}
@@ -191,7 +191,7 @@ public class AuthResourceMain implements InitializingBean{
 							AuthResourcesSaveInVO childAuthResourcesInVO = new AuthResourcesSaveInVO();
 							childAuthResourcesInVO.setName(resourceName);
 							childAuthResourcesInVO.setUrl(path);
-							childAuthResourcesInVO.setAppId(app_id);
+							childAuthResourcesInVO.setAppId(appId);
 							childAuthResourcesInVO.setType(authResource.type());
 							if(authResource.type() == AuthConstant.ResourcesType.BUTTON){
 								String code = authResource.code();
