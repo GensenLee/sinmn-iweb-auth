@@ -161,7 +161,10 @@ public class AuthResourceAspect {
 			}
 			
 			AuthResource parentAuthResource = AnnotationUtils.findAnnotation(pjp.getTarget().getClass(), AuthResource.class);
-			if(!authResource.ignoreApp() || (parentAuthResource != null && !parentAuthResource.ignoreApp())){
+			
+			if(authResource.ignoreApp() || (parentAuthResource != null && parentAuthResource.ignoreApp())){
+				log.info("[AuthResourceAspect.around] 接口支持跨app访问");
+			}else{
 				//不允许跨APP调用，获取APPID
 				log.info("[AuthResourceAspect.around] 接口不支持跨app访问");
 				long appId = getAppId(pjp);
@@ -169,8 +172,6 @@ public class AuthResourceAspect {
 				if(appId > 0 && appId != authAppUserInstance.getAppId()){
 					throw new AuthResourcePermissionDeniedException();
 				}
-			}else{
-				log.info("[AuthResourceAspect.around] 接口支持跨app访问");
 			}
 			
 			if(LongUtil.toLong(authAppUserInstance.getRoleId()) <= 0){

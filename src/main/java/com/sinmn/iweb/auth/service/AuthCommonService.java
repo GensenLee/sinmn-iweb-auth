@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sinmn.core.model.emun.ModelOperator;
+import com.sinmn.core.utils.util.StringUtil;
 import com.sinmn.iweb.auth.constant.AuthConstant;
 import com.sinmn.iweb.auth.context.AuthContext;
 import com.sinmn.iweb.auth.model.AuthAppInstance;
@@ -41,7 +42,7 @@ public class AuthCommonService {
 				.where(AuthKeyValue.KEY,AuthConstant.KeyValueKey.COPYRIGHT)
 				.getString();
 		
-		result.put(AuthConstant.KeyValueKey.SYSTEM_NAME, name);
+		result.put(StringUtil.toLHCase(AuthConstant.KeyValueKey.SYSTEM_NAME), name);
 		result.put(AuthConstant.KeyValueKey.COPYRIGHT, copyright);
 		return result;
 	}
@@ -52,7 +53,7 @@ public class AuthCommonService {
 				.include(AuthKeyValue.VALUE)
 				.where(AuthKeyValue.KEY,AuthConstant.KeyValueKey.SYSTEM_NAME)
 				.getString();
-		result.put(AuthConstant.KeyValueKey.SYSTEM_NAME, name);
+		result.put(StringUtil.toLHCase(AuthConstant.KeyValueKey.SYSTEM_NAME), name);
 		return result;
 	}
 	
@@ -62,7 +63,7 @@ public class AuthCommonService {
 				.include(AuthKeyValue.VALUE)
 				.where(AuthKeyValue.KEY,AuthConstant.KeyValueKey.SYSTEM_NAME)
 				.getString();
-		result.put(AuthConstant.KeyValueKey.SYSTEM_NAME, name);
+		result.put(StringUtil.toLHCase(AuthConstant.KeyValueKey.SYSTEM_NAME), name);
 		result.put("instanceName", authAppInstanceRepository.include(AuthAppInstance.NAME)
 				.where(AuthAppInstance.ID,
 						authAppUserInstanceRepository.createSelect().fields(AuthAppUserInstance.APP_INSTANCE_ID).where(AuthAppUserInstance.ID,userInfoInnerVO.getUserInstanceId()).sql(ModelOperator.EQ)

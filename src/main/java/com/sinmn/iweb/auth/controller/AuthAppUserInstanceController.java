@@ -25,7 +25,7 @@ public class AuthAppUserInstanceController {
 	private AuthAppUserInstanceService authAppUserInstanceService;
 	
 	@RequestMapping(path ="/admin/auth/user/authAppUserInstance/list.do")
-	@AuthResource(parent="用户实例",name="列表搜索")
+	@AuthResource(parent="用户实例",name="列表搜索",ignoreApp=true)
 	public ApiResult<Object> list()
 			throws CommonException
 	{
