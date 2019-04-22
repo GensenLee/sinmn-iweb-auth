@@ -65,5 +65,11 @@ public class AuthUserController {
 	{
 		return ApiResult.getSuccess(authUserService.active(authUser,AuthContext.getUserInfoInnerVO()));
 	}
+
+	@RequestMapping(path ="/{userid}/reset/{token1}/{token2}" )
+	public void emailResetUser(){
+
+    }
+
 	
 }
