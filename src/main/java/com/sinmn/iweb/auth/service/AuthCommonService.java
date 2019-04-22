@@ -65,7 +65,7 @@ public class AuthCommonService {
 		result.put(AuthConstant.KeyValueKey.SYSTEM_NAME, name);
 		result.put("instanceName", authAppInstanceRepository.include(AuthAppInstance.NAME)
 				.where(AuthAppInstance.ID,
-						authAppUserInstanceRepository.createSelect().fields(AuthAppUserInstance.APP_INSTANCE_ID).where(AuthAppUserInstance.ID,userInfoInnerVO.getUserInstanceId()).sql(ModelOperator.EQ)
+						authAppUserInstanceRepository.createSelect().fields(AuthAppUserInstance.APP_INSTANCE_ID).where(AuthAppUserInstance.ID,userInfoInnerVO.getUserInstanceId().intValue()).sql(ModelOperator.EQ)
 				,ModelOperator.PLAIN)
 				.getString());
 		return result;
