@@ -41,9 +41,9 @@ public @interface AuthResource {
 	long appId() default -1L;
 	
 	/**
-	 * 系统名字
+	 * 系统编码
 	 */
-	String appName() default "";
+	String appCode() default "";
 	
 	/**
 	 * 编码

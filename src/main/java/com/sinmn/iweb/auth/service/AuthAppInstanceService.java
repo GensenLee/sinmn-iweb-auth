@@ -50,6 +50,10 @@ public class AuthAppInstanceService {
 	public Object save(AuthAppInstance authAppInstance,UserInfoInnerVO userInfoInnerVO) throws CommonException{
 		VerifyUtil.verify(authAppInstance);
 		authAppInstance.setCompanyId(userInfoInnerVO.getCompanyId());
+		AuthApp authApp = authAppRepository.get(authAppInstance.getAppId());
+		if(authApp != null){
+			authAppInstance.setCode(authApp.getCode());
+		}
 		if(LongUtil.isZero(authAppInstance.getId())){
 			BeanUtil.initCreate(authAppInstance, userInfoInnerVO.getUserName());
 		}else{

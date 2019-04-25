@@ -163,11 +163,11 @@ public class AuthResourceMain implements InitializingBean{
 							if(appId <= 0 && parentAuthResource != null){
 								appId = parentAuthResource.appId();
 							}
-							if(parentAuthResource != null && StringUtil.isNotEmpty(parentAuthResource.appName())){
-								AuthApp authApp = cacheAuthApp.get(parentAuthResource.appName());
+							if(parentAuthResource != null && StringUtil.isNotEmpty(parentAuthResource.appCode())){
+								AuthApp authApp = cacheAuthApp.get(parentAuthResource.appCode());
 								if(authApp == null){
-									authApp = authAppRepository.where(AuthApp.NAME,parentAuthResource.appName()).get();
-									cacheAuthApp.put(parentAuthResource.appName(),authApp);
+									authApp = authAppRepository.where(AuthApp.CODE,parentAuthResource.appCode()).get();
+									cacheAuthApp.put(parentAuthResource.appCode(),authApp);
 								}
 								if(authApp != null){
 									appId = authApp.getId();

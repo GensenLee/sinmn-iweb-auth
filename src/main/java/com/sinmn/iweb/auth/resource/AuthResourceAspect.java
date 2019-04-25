@@ -95,8 +95,8 @@ public class AuthResourceAspect {
 		if(appId <= 0 && parentAuthResource != null){
 			appId = parentAuthResource.appId();
 		}
-		if(parentAuthResource != null && StringUtil.isNotEmpty(parentAuthResource.appName())){
-			AuthApp authApp = authAppRepository.where(AuthApp.NAME,parentAuthResource.appName()).get();
+		if(parentAuthResource != null && StringUtil.isNotEmpty(parentAuthResource.appCode())){
+			AuthApp authApp = authAppRepository.where(AuthApp.CODE,parentAuthResource.appCode()).get();
 			
 			if(authApp != null){
 				appId = authApp.getId();
