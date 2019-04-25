@@ -107,7 +107,7 @@ public class AuthResourceAspect {
 	}
 	
 	//定义环绕通知
-	@Around("execution( * *(..)) and @annotation(authResource)")
+	@Around("execution( * *(..)) && @annotation(authResource)")
 	public Object around(ProceedingJoinPoint  pjp, AuthResource authResource) throws Throwable{
 				
 		log.info("[AuthResourceAspect.around] 资源环绕通知aop启动......");
