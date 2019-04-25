@@ -26,6 +26,8 @@ public class AuthAppInstance extends BaseBean{
 	public static final String ID = "id";
 	/** 应用id */
 	public static final String APP_ID = "app_id";
+	/** 英文名字 */
+	public static final String CODE = "code";
 	/** 集团id */
 	public static final String COMPANY_ID = "company_id";
 	/** 应用名字 */
@@ -56,6 +58,10 @@ public class AuthAppInstance extends BaseBean{
 	@Column(name = "name",jdbcType="varchar(100)",notNull=true,def="''",comment="应用名字")
 	@VerifyField("应用名字")
 	private String name;
+	
+	@Column(name = "code",jdbcType="varchar(30)",notNull=true,def="''",comment="英文名字")
+	@VerifyField(value = "英文名字")
+	private String code;
 	
 	@Column(name = "del_flag",jdbcType="tinyint(3)",notNull=true,def="0",comment="删除标志位 0未删除 1删除")
 	@VerifyField(ignore = true)

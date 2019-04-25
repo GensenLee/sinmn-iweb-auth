@@ -23,7 +23,7 @@ public class AuthApp extends BaseBean{
 	/** 流水号 */
 	public static final String ID = "id";
 	/** 英文名字 */
-	public static final String NAME = "name";
+	public static final String CODE = "code";
 	/** 中文名字 */
 	public static final String CN_NAME = "cn_name";
 	/** 系统描述 */
@@ -47,9 +47,9 @@ public class AuthApp extends BaseBean{
 	@VerifyField(ignore = true)
 	private Long id;
 	
-	@Column(name = "name",jdbcType="varchar(30)",notNull=true,def="''",comment="英文名字")
+	@Column(name = "code",jdbcType="varchar(30)",notNull=true,def="''",comment="英文名字")
 	@VerifyField(value = "英文名字")
-	private String name;
+	private String code;
 	
 	@Column(name = "cn_name",jdbcType="varchar(30)",notNull=true,def="''",comment="中文名字")
 	@VerifyField(value = "中文名字")
@@ -101,10 +101,10 @@ public class AuthApp extends BaseBean{
 	
 	
 
-	public AuthApp(String name, String cnName, String descript, String url, Integer type, Integer isActive,
+	public AuthApp(String code, String cnName, String descript, String url, Integer type, Integer isActive,
 			String createName, Date createTime, String modifyName, Date modifyTime) {
 		super();
-		this.name = name;
+		this.code = code;
 		this.cnName = cnName;
 		this.descript = descript;
 		this.url = url;

@@ -31,7 +31,7 @@ public class AuthAppService {
 		ModelWhere mw = new ModelWhere();
 		if(StringUtil.isNotEmpty(svo.getQuickSearch())){
 			ModelWhere smw = new ModelWhere();
-			smw.add(AuthApp.NAME,svo.getQuickSearch(),ModelOperator.LIKE);
+			smw.add(AuthApp.CODE,svo.getQuickSearch(),ModelOperator.LIKE);
 			smw.add(AuthApp.CN_NAME,svo.getQuickSearch(),ModelOperator.LIKE,ModelCondition.OR);
 			mw.add(smw);
 		}
