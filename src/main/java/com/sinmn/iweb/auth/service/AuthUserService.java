@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.sinmn.core.utils.util.*;
 import com.sinmn.core.utils.util.email.EmailUtil;
 import com.sinmn.core.utils.vo.EmailHostVO;
 import com.sinmn.iweb.auth.util.ResetVerifyUtil;
@@ -20,11 +21,6 @@ import org.springframework.stereotype.Service;
 import com.sinmn.core.model.dto.ModelWhere;
 import com.sinmn.core.model.emun.ModelOperator;
 import com.sinmn.core.utils.exception.CommonException;
-import com.sinmn.core.utils.util.BeanUtil;
-import com.sinmn.core.utils.util.IPUtil;
-import com.sinmn.core.utils.util.LongUtil;
-import com.sinmn.core.utils.util.MapUtil;
-import com.sinmn.core.utils.util.StringUtil;
 import com.sinmn.core.utils.verify.VerifyUtil;
 import com.sinmn.core.utils.vo.PageResult;
 import com.sinmn.iweb.auth.constant.AuthConstant;
@@ -338,7 +334,7 @@ public class AuthUserService {
 
         EmailHostVO emailHostVO = new EmailHostVO("smtp.163.com", "sinmn_test@163.com", "sinmn888", "测试邮件:ccb");
         EmailUtil.setVO(emailHostVO);
-        EmailUtil.send("ligz@sinmn.com", "密码重置",
+        EmailUtil.send(email, "密码重置",
                 "请在12小时内访问链接重置密码\n <a>http://127.0.0.1:8080/" + "reset/" + user.getId() + "/" + token1 + "/" + token2 + "</a>");
         return null;
     }
@@ -360,6 +356,31 @@ public class AuthUserService {
         return null;
     }
 
+    public Object verifyResetReq2(AuthUserResetInVO vo) {
+        String userId = iWebAuthRedisDao.getByKey(vo.getResetKey());
+        if (StringUtil.isEmpty(userId)) {
+            return "密码更新操作已经过期";
+        }
+        vo.setUserId(userId);
+        AuthUserResetVO authUserResetVO = new AuthUserResetVO(vo.getUserId(), vo.getResetToken1(), vo.getResetToken2());
+        AuthUserResetVO userResetVO = iWebAuthRedisDao.getUserResetVO(vo.getUserId());
+        String verify = ResetVerifyUtil.verify(authUserResetVO, userResetVO);
+        if (!StringUtil.isEmpty(verify)) {
+            return verify;
+        }
+        return null;
+    }
+
+    /**生成user重置密码请求参数
+     * @param userId
+     * @return
+     */
+    public Object getUserResetToken(String userId){
+        String randomToken = ResetVerifyUtil.randomToken(12);
+        iWebAuthRedisDao.set(randomToken,userId);
+        return randomToken;
+    }
+
     /**
      * 通过邮件中的url重置密码
      *
@@ -370,8 +391,11 @@ public class AuthUserService {
         AuthUser authUser = authUserRepository.get(vo.getUserId());
         authUser.setPasswdSuffix(UUID.randomUUID().toString().replaceAll("-", ""));
         authUser.setPasswd(PasswdUtil.getPasswd(vo.getNewPasswd(), authUser.getPasswdSuffix()));
-        authAppRepository.update(authUser);
-        return null;
+        authUser.setModifyTime(DateUtil.getNowTime());
+        authUserRepository.include(AuthUser.PASSWD,AuthUser.PASSWD_SUFFIX,AuthUser.MODIFY_TIME).update(authUser);
+        iWebAuthRedisDao.set(vo.getResetKey(),"");
+        iWebAuthRedisDao.removeUserResetVO(vo.getUserId());
+        return "密码重置成功";
     }
 
 }

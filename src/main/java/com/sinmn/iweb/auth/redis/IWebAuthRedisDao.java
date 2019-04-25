@@ -75,5 +75,8 @@ public class IWebAuthRedisDao extends AspectRedisDao {
     public void setUserResetVO(AuthUserResetVO vo){
         set(String.format(USER_RESET_KEY,String.valueOf(vo.getUserId())),vo.toJsonString());
     }
-
+    @Redis
+    public void removeUserResetVO(String userId){
+        set(String.format(USER_RESET_KEY,userId),"{}");
+    }
 }

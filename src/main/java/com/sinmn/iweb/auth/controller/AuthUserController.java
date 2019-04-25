@@ -87,26 +87,32 @@ public class AuthUserController {
         if (StringUtil.isEmpty(userId)||StringUtil.isEmpty(resetToken1)||StringUtil.isEmpty(resetToken2)) {
             return ApiResult.getFailed("请求异常");
         }
-        Object verifyResetReq = authUserService.verifyResetReq(new AuthUserResetInVO(userId,resetToken1,resetToken2));
+        AuthUserResetInVO authUserResetInVO = new AuthUserResetInVO();
+        authUserResetInVO.setUserId(userId);
+        authUserResetInVO.setResetToken1(resetToken1);
+        authUserResetInVO.setResetToken2(resetToken2);
+        Object verifyResetReq = authUserService.verifyResetReq(authUserResetInVO);
         if (StringUtil.isNotEmpty(verifyResetReq)) {
             return ApiResult.getFailed((String)verifyResetReq);
         }
-        response.sendRedirect("/resetPwd.html?userId="+userId);
+        String userResetToken = (String) authUserService.getUserResetToken(userId);
+
+        response.sendRedirect("http://192.168.0.128:8080/resetPwd.html?k="+userResetToken+"&t1="+resetToken1+"&t2="+resetToken2);
         return ApiResult.getSuccess("发送成功");
     }
 
     @RequestMapping(path = "/admin/auth/auhtUser/reset.do",method = {RequestMethod.POST})
     public ApiResult resetPwd(@RequestBody AuthUserResetInVO vo){
-        if (IntUtil.isZero(vo.getUserId()) ||StringUtil.isEmpty(vo.getResetToken1())||StringUtil.isEmpty(vo.getResetToken2())) {
+        if (StringUtil.isEmpty(vo.getResetKey())) {
             return ApiResult.getFailed("请求异常");
         }
-        Object verifyResetReq = authUserService.verifyResetReq(vo);
+        Object verifyResetReq = authUserService.verifyResetReq2(vo);
         if (StringUtil.isNotEmpty(verifyResetReq)) {
             return ApiResult.getFailed((String)verifyResetReq);
         }
-        authUserService.updatePwd(vo);
-        return ApiResult.getSuccess("密码重置成功");
+        return ApiResult.getSuccess((String)authUserService.updatePwd(vo));
     }
+
 
 	
 }
