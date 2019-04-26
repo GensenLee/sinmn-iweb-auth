@@ -5,8 +5,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.sinmn.core.utils.util.IntUtil;
 import com.sinmn.core.utils.util.StringUtil;
-import com.sinmn.iweb.auth.vo.inVO.AuthUserResetInVO;
-import com.sinmn.iweb.auth.vo.inVO.EmailInVO;
+import com.sinmn.iweb.auth.vo.inVO.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,8 +15,6 @@ import com.sinmn.iweb.auth.context.AuthContext;
 import com.sinmn.iweb.auth.model.AuthUser;
 import com.sinmn.iweb.auth.resource.AuthResource;
 import com.sinmn.iweb.auth.service.AuthUserService;
-import com.sinmn.iweb.auth.vo.inVO.AuthLoginInVO;
-import com.sinmn.iweb.auth.vo.inVO.AuthUserRepasswdInVO;
 import com.sinmn.iweb.auth.vo.searchVO.AuthUserSearchVO;
 
 import java.io.IOException;
@@ -61,6 +58,21 @@ public class AuthUserController {
 	{
 		return ApiResult.getSuccess(authUserService.rePasswd(authUserRepasswdInVO,AuthContext.getUserInfoInnerVO()));
 	}
+
+    @RequestMapping(path ="/admin/auth/instance/authApp/reUserName.do",method = {RequestMethod.POST})
+    public ApiResult<Object> reUserName(@RequestBody AuthUserRenameInVO authUserRenameInVO)
+            throws CommonException
+    {
+        return ApiResult.getSuccess(authUserService.reName(authUserRenameInVO,AuthContext.getUserInfoInnerVO()));
+    }
+
+    //更新用户名和密码
+    @RequestMapping(path ="/admin/auth/instance/authApp/renew.do",method = {RequestMethod.POST})
+    public ApiResult<Object> renew(@RequestBody AuthUserRenewInVO authUserRenewInVO)
+            throws CommonException
+    {
+        return ApiResult.getSuccess(authUserService.reNew(authUserRenewInVO,AuthContext.getUserInfoInnerVO()));
+    }
 	
 	@RequestMapping(path ="/admin/auth/instance/authUser/active.do",method = {RequestMethod.POST})
 	@AuthResource(parent="用户列表",name="账号激活",type=AuthResource.BUTTON)
@@ -69,6 +81,14 @@ public class AuthUserController {
 	{
 		return ApiResult.getSuccess(authUserService.active(authUser,AuthContext.getUserInfoInnerVO()));
 	}
+
+	//获取用户邮箱
+    @RequestMapping(path ="/admin/auth/instance/authUser/getEmail.do",method = {RequestMethod.POST})
+    public ApiResult<Object> getEmail()
+            throws CommonException
+    {
+        return ApiResult.getSuccess(authUserService.getUserEmail(AuthContext.getUserInfoInnerVO()));
+    }
 
 	@RequestMapping(path = "/admin/auth/auhtUser/sandResetMail.do",method = {RequestMethod.POST})
 	public ApiResult sandResetEmail(@RequestBody EmailInVO email){
@@ -97,7 +117,7 @@ public class AuthUserController {
         }
         String userResetToken = (String) authUserService.getUserResetToken(userId);
 
-        response.sendRedirect("http://192.168.0.128:8080/resetPwd.html?k="+userResetToken+"&t1="+resetToken1+"&t2="+resetToken2);
+        response.sendRedirect("http://admin.polyv.sinmn.cn/resetPwd.html?k="+userResetToken+"&t1="+resetToken1+"&t2="+resetToken2);
         return ApiResult.getSuccess("发送成功");
     }
 

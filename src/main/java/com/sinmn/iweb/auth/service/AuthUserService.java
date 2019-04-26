@@ -13,7 +13,7 @@ import com.sinmn.core.utils.util.*;
 import com.sinmn.core.utils.util.email.EmailUtil;
 import com.sinmn.core.utils.vo.EmailHostVO;
 import com.sinmn.iweb.auth.util.ResetVerifyUtil;
-import com.sinmn.iweb.auth.vo.inVO.AuthUserResetInVO;
+import com.sinmn.iweb.auth.vo.inVO.*;
 import com.sinmn.iweb.auth.vo.innerVO.AuthUserResetVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,8 +37,6 @@ import com.sinmn.iweb.auth.repository.AuthCompanyRepository;
 import com.sinmn.iweb.auth.repository.AuthLoginLogRepository;
 import com.sinmn.iweb.auth.repository.AuthUserRepository;
 import com.sinmn.iweb.auth.util.PasswdUtil;
-import com.sinmn.iweb.auth.vo.inVO.AuthLoginInVO;
-import com.sinmn.iweb.auth.vo.inVO.AuthUserRepasswdInVO;
 import com.sinmn.iweb.auth.vo.innerVO.UserInfoInnerVO;
 import com.sinmn.iweb.auth.vo.searchVO.AuthUserSearchVO;
 
@@ -304,6 +302,54 @@ public class AuthUserService {
     }
 
 
+    public Object reName(AuthUserRenameInVO vo,UserInfoInnerVO userInfoInnerVO){
+        VerifyUtil.verify(vo);
+        if (userInfoInnerVO.getUserName().equals(vo.getNewName())) {
+            return null;
+        }
+        AuthUser user = authUserRepository.get(userInfoInnerVO.getUserId());
+        user.setName(vo.getNewName());
+        BeanUtil.initModify(user,user.getName());
+        authUserRepository.include(AuthUser.NAME,AuthUser.MODIFY_NAME,AuthUser.MODIFY_TIME).update(user);
+        return null;
+    }
+
+    /**更新用户名和密码
+     * @param vo
+     * @return
+     */
+    public Object reNew(AuthUserRenewInVO vo,UserInfoInnerVO userInfoInnerVO) throws CommonException {
+        VerifyUtil.verify(vo);
+        AuthUser authUser = authUserRepository.get(userInfoInnerVO.getUserId());
+
+        if (authUser.getTryCount() >= 6) {
+            throw new CommonException("密码输入错误次数过多，账号已经被封停，请联系系统管理人员解封");
+        }
+
+        if (authUser.getIsActive() == AuthConstant.Common.NO) {
+            throw new CommonException("账号已经被冻结，请联系管理员激活账号");
+        }
+
+        if (!authUser.getPasswd().equals(PasswdUtil.getPasswd(vo.getPasswd(), authUser.getPasswdSuffix()))) {
+            authUser.setTryCount(authUser.getTryCount() + 1);
+            authUserRepository.include(AuthUser.TRY_COUNT).update(authUser);
+            String message = "";
+            if (authUser.getTryCount() > 2) {
+                message = String.format("输入错误 %d 次,你还有 %d 次机会", authUser.getTryCount(), 6 - authUser.getTryCount());
+            }
+            throw new CommonException("原始密码错误 " + message);
+        }
+
+        authUser.setPasswdSuffix(UUID.randomUUID().toString().replaceAll("-", ""));
+        authUser.setPasswd(PasswdUtil.getPasswd(vo.getNewPasswd(), authUser.getPasswdSuffix()));
+        authUser.setTryCount(0);
+        authUser.setName(vo.getNewName());
+        BeanUtil.initModify(authUser,authUser.getName());
+        authUserRepository.include(AuthUser.TRY_COUNT, AuthUser.PASSWD, AuthUser.PASSWD_SUFFIX,AuthUser.NAME,
+                AuthUser.MODIFY_TIME,AuthUser.MODIFY_NAME).update(authUser);
+        return null;
+    }
+
     public Object active(AuthUser authUser, UserInfoInnerVO userInfoInnerVO) throws CommonException {
         VerifyUtil.verify(authUser, AuthUser.ID, AuthUser.IS_ACTIVE);
         AuthUser orgAuthUser = authUserRepository
@@ -318,6 +364,15 @@ public class AuthUserService {
                 .save(authUser);
         return authUser;
     }
+
+
+    public Object getUserEmail(UserInfoInnerVO userInfoInnerVO){
+        AuthUser user = authUserRepository.get(userInfoInnerVO.getUserId());
+        Map<String,String> map = new HashMap<String, String>();
+        map.put("email",user.getEmail());
+        return map;
+    }
+
 
     public Object sandResetMail(String email) {
 
