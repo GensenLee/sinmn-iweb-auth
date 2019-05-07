@@ -60,7 +60,7 @@ public class AuthAppInstance extends BaseBean{
 	private String name;
 	
 	@Column(name = "code",jdbcType="varchar(30)",notNull=true,def="''",comment="英文名字")
-	@VerifyField(value = "英文名字")
+	@VerifyField(value = "英文名字",ignore = true)
 	private String code;
 	
 	@Column(name = "del_flag",jdbcType="tinyint(3)",notNull=true,def="0",comment="删除标志位 0未删除 1删除")
