@@ -79,6 +79,10 @@ public class AuthAppUserInstance extends BaseBean{
 	@Column(name = "del_flag",jdbcType="tinyint(3)",notNull=true,def="0",comment="删除标志位 0未删除 1删除")
 	private Integer delFlag;
 	
+	@Column(name = "ext",jdbcType="varchar(2000)",notNull=true,def="''",comment="扩展字段")
+	@VerifyField(value = "扩展字段",ignore = true)
+	private String ext;
+	
 	@Column(name = "create_name",jdbcType="varchar(50)",notNull=true,def="''",comment="创建人")
 	@VerifyField(ignore = true)
 	private String createName;

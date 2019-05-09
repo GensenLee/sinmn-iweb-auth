@@ -27,6 +27,8 @@ public class AuthCompany extends BaseBean{
 	public static final String SHORT_NAME = "short_name";
 	/** 账号后缀 */
 	public static final String ACCOUNT = "account";
+	/** 扩展字段 */
+	public static final String EXT = "ext";
 	
 	/** 创建人 */
 	public static final String CREATE_NAME = "create_name";
@@ -52,6 +54,10 @@ public class AuthCompany extends BaseBean{
 	@Column(name = "account",jdbcType="varchar(50)",notNull=true,def="''",comment="账号后缀")
 	@VerifyField(value="账号后缀")
 	private String account;
+	
+	@Column(name = "ext",jdbcType="varchar(2000)",notNull=true,def="''",comment="扩展字段")
+	@VerifyField(value = "扩展字段",ignore = true)
+	private String ext;
 	
 	@Column(name = "create_name",jdbcType="varchar(50)",notNull=true,def="''",comment="创建人")
 	@VerifyField(ignore = true)

@@ -46,6 +46,8 @@ public class AuthUser extends BaseBean{
 	public static final String TRY_COUNT = "try_count";
 	/** 是否激活 0否 1是 */
 	public static final String IS_ACTIVE = "is_active";
+	/** 扩展字段 */
+	public static final String EXT = "ext";
 	/** 创建人 */
 	public static final String CREATE_NAME = "create_name";
 	/** 创建时间 */
@@ -98,6 +100,10 @@ public class AuthUser extends BaseBean{
 	@Column(name = "is_active",jdbcType="tinyint(3)",notNull=true,def="1",comment="是否激活 0否 1是")
 	@VerifyField(ignore = true)
 	private Integer isActive;
+	
+	@Column(name = "ext",jdbcType="varchar(2000)",notNull=true,def="''",comment="扩展字段")
+	@VerifyField(value = "扩展字段",ignore = true)
+	private String ext;
 	
 	@Column(name = "create_name",jdbcType="varchar(50)",notNull=true,def="''",comment="创建人")
 	@VerifyField(ignore = true)

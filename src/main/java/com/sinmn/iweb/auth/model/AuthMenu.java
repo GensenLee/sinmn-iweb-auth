@@ -76,7 +76,7 @@ public class AuthMenu extends BaseBean{
 	@Column(name = "path",jdbcType="varchar(500)",notNull=true,def="''",comment="路径，前后都有逗号")
 	private String path;
 	
-	@Column(name = "ext",jdbcType="varchar(500)",notNull=true,def="''",comment="扩展字段")
+	@Column(name = "ext",jdbcType="varchar(2000)",notNull=true,def="''",comment="扩展字段")
 	private String ext;
 	
 	@Column(name = "show_reg",jdbcType="varchar(1000)",notNull=true,def="''",comment="显示对应的表达式")
