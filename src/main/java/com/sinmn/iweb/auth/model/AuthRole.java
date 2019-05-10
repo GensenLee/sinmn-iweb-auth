@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.sinmn.core.model.annotation.Column;
 import com.sinmn.core.model.annotation.Table;
+import com.sinmn.core.utils.verify.VerifyField;
 import com.sinmn.core.utils.vo.BaseBean;
 
 import io.swagger.annotations.ApiModel;
@@ -33,6 +34,8 @@ public class AuthRole extends BaseBean{
 	public static final String NAME = "name";
 	/** 角色编码 */
 	public static final String CODE = "code";
+	/** 扩展字段 */
+	public static final String EXT = "ext";
 	/** 系统管理员，默认拥有所有的菜单 */
 	public static final String IS_ADMIN = "is_admin";
 	/** 是否能被修改 0否 1是 */
@@ -93,6 +96,10 @@ public class AuthRole extends BaseBean{
 	@Column(name = "del_flag",jdbcType="tinyint(3)",notNull=true,def="0",comment="删除标志位 0未删除 1删除")
 	@ApiModelProperty("删除标志位 0未删除 1删除")
 	private Byte delFlag;
+	
+	@Column(name = "ext",jdbcType="varchar(2000)",notNull=true,def="''",comment="扩展字段")
+	@VerifyField(value = "扩展字段",ignore = true)
+	private String ext;
     
     	/** 创建人 */
 	@Column(name = "create_name",jdbcType="varchar(50)",notNull=true,def="''",comment="创建人")

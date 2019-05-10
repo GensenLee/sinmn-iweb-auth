@@ -116,6 +116,8 @@ public class AuthCompanyService {
 			authAppUserInstanceRepository.save(authAppUserInstance);
 			
 		}else{
+			BeanUtil.initModify(authCompanyInVO, userInfoInnerVO.getUserName());
+			authCompanyRepository.update(authCompanyInVO);
 		}
 		
 		return null;
