@@ -32,6 +32,8 @@ public class AuthApp extends BaseBean{
 	public static final String URL = "url";
 	/** 系统类型 0内部系统 1外部系统 */
 	public static final String TYPE = "type";
+	/** 扩展字段 */
+	public static final String EXT = "ext";
 	/** 是否可用,0不可用，1可用 */
 	public static final String IS_ACTIVE = "is_active";
 	/** 创建人 */
@@ -70,6 +72,10 @@ public class AuthApp extends BaseBean{
 	@Column(name = "is_active",jdbcType="tinyint(3)",notNull=true,def="1",comment="是否可用,0不可用，1可用")
 	@VerifyField(ignore = true)
 	private Integer isActive;
+	
+	@Column(name = "ext",jdbcType="varchar(2000)",notNull=true,def="''",comment="扩展字段")
+	@VerifyField(value = "扩展字段",ignore = true)
+	private String ext;
 	
 	@Column(name = "create_name",jdbcType="varchar(50)",notNull=true,def="''",comment="创建人")
 	@VerifyField(ignore = true)
