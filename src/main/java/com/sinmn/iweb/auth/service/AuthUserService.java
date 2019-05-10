@@ -28,6 +28,7 @@ import com.sinmn.iweb.auth.model.AuthAppInstance;
 import com.sinmn.iweb.auth.model.AuthAppUserInstance;
 import com.sinmn.iweb.auth.model.AuthCompany;
 import com.sinmn.iweb.auth.model.AuthLoginLog;
+import com.sinmn.iweb.auth.model.AuthRole;
 import com.sinmn.iweb.auth.model.AuthUser;
 import com.sinmn.iweb.auth.redis.IWebAuthRedisDao;
 import com.sinmn.iweb.auth.repository.AuthAppRepository;
@@ -82,6 +83,7 @@ public class AuthUserService {
 		ModelWhere mw = new ModelWhere();
 		
 		if(StringUtil.isNotEmpty(svo.getQuickSearch())){
+			mw.add(AuthUser.NAME,svo.getQuickSearch(),ModelOperator.LIKE);
 		}
 		
 		if(LongUtil.isZero(svo.getCompanyId())){
