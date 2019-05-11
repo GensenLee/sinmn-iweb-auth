@@ -16,6 +16,7 @@ import com.sinmn.iweb.auth.util.ResetVerifyUtil;
 import com.sinmn.iweb.auth.vo.inVO.*;
 import com.sinmn.iweb.auth.vo.innerVO.AuthUserResetVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.sinmn.core.model.dto.ModelWhere;
@@ -65,7 +66,8 @@ public class AuthUserService {
 	@Autowired
 	private AuthLoginLogRepository authLoginLogRepository;
 
-
+    @Value("${sysUrl}")
+    private String sysUrl;
 
 	private static String targetIp;
 
@@ -393,7 +395,7 @@ public class AuthUserService {
         EmailHostVO emailHostVO = new EmailHostVO("smtp.163.com", "sinmn_test@163.com", "sinmn888", "测试邮件:ccb");
         EmailUtil.setVO(emailHostVO);
         EmailUtil.send(email, "密码重置",
-                "请在12小时内访问链接重置密码\n <a>http://127.0.0.1:8080/" + "reset/" + user.getId() + "/" + token1 + "/" + token2 + "</a>");
+                "请在12小时内访问链接重置密码\n " + sysUrl + "/reset/" + user.getId() + "/" + token1 + "/" + token2 + "</a>");
         return null;
     }
 
