@@ -7,9 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sinmn.core.model.dto.ModelWhere;
+import com.sinmn.core.model.emun.ModelOperator;
 import com.sinmn.core.utils.exception.CommonException;
 import com.sinmn.core.utils.util.BeanUtil;
 import com.sinmn.core.utils.util.LongUtil;
+import com.sinmn.core.utils.util.StringUtil;
 import com.sinmn.core.utils.verify.VerifyUtil;
 import com.sinmn.core.utils.vo.PageResult;
 import com.sinmn.iweb.auth.model.AuthApp;
@@ -33,6 +35,15 @@ public class AuthAppInstanceService {
 		
 		ModelWhere mw = new ModelWhere();
 		mw.add(AuthAppInstance.COMPANY_ID, userInfoInnerVO.getCompanyId());
+		
+		if(StringUtil.isNotEmpty(svo.getQuickSearch())){
+			mw.add(AuthAppInstance.NAME,svo.getQuickSearch(),ModelOperator.LIKE);
+		}
+		
+		if(LongUtil.isNotZero(svo.getAppId())){
+			mw.add(AuthAppInstance.APP_ID, svo.getAppId());
+		}
+
 		List<AuthAppInstance> liAuthAppInstance = authAppInstanceRepository
 				.where(mw)
 				.limit(svo.getStart(),svo.getSize())

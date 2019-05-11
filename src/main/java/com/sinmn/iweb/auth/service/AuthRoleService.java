@@ -20,6 +20,7 @@ import com.sinmn.core.utils.vo.PageResult;
 import com.sinmn.iweb.auth.constant.AuthConstant;
 import com.sinmn.iweb.auth.model.AuthApp;
 import com.sinmn.iweb.auth.model.AuthAppInstance;
+import com.sinmn.iweb.auth.model.AuthCompany;
 import com.sinmn.iweb.auth.model.AuthRole;
 import com.sinmn.iweb.auth.model.AuthRoleMenu;
 import com.sinmn.iweb.auth.repository.AuthAppInstanceRepository;
@@ -47,6 +48,14 @@ public class AuthRoleService {
 	
 	public Object list(AuthRoleSearchVO svo,UserInfoInnerVO userInfoInnerVO){
 		
+		ModelWhere mw = new ModelWhere();
+		
+		mw.add(AuthRole.DEL_FLAG,AuthConstant.Common.NO);
+		
+		if(StringUtil.isNotEmpty(svo.getQuickSearch())){
+			mw.add(AuthRole.NAME,svo.getQuickSearch(),ModelOperator.LIKE);
+		}
+		
 		if(LongUtil.isNotZero(svo.getAppId())){
 			authRoleRepository.where(AuthRole.APP_ID,svo.getAppId());
 		}else if(LongUtil.isNotZero(svo.getAppInstanceId())){
@@ -60,6 +69,7 @@ public class AuthRoleService {
 		}
 		
 		List<AuthRole> liAuthRole = authRoleRepository
+				.where(mw)
 				.where(AuthRole.DEL_FLAG,AuthConstant.Common.NO)
 				.where(AuthRole.COMPANY_ID,userInfoInnerVO.getCompanyId())
 				.list();
@@ -82,6 +92,10 @@ public class AuthRoleService {
 		ModelWhere mw = new ModelWhere();
 		
 		mw.add(AuthRole.DEL_FLAG,AuthConstant.Common.NO);
+		
+		if(StringUtil.isNotEmpty(svo.getQuickSearch())){
+			mw.add(AuthRole.NAME,svo.getQuickSearch(),ModelOperator.LIKE);
+		}
 		
 		if(LongUtil.isZero(svo.getCompanyId())){
 			mw.add(AuthRole.COMPANY_ID,userInfoInnerVO.getCompanyId());
