@@ -1,23 +1,20 @@
 package com.sinmn.iweb.auth.controller;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.sinmn.core.utils.util.IntUtil;
-import com.sinmn.core.utils.util.StringUtil;
-import com.sinmn.iweb.auth.vo.inVO.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.*;
-
 import com.sinmn.core.utils.exception.CommonException;
+import com.sinmn.core.utils.util.StringUtil;
 import com.sinmn.core.utils.vo.ApiResult;
 import com.sinmn.iweb.auth.context.AuthContext;
 import com.sinmn.iweb.auth.model.AuthUser;
 import com.sinmn.iweb.auth.resource.AuthResource;
 import com.sinmn.iweb.auth.service.AuthUserService;
+import com.sinmn.iweb.auth.vo.inVO.*;
 import com.sinmn.iweb.auth.vo.searchVO.AuthUserSearchVO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @RestController
@@ -87,13 +84,7 @@ public class AuthUserController {
 		return ApiResult.getSuccess(authUserService.active(authUser,AuthContext.getUserInfoInnerVO()));
 	}
 
-	//获取用户邮箱
-    @RequestMapping(path ="/admin/auth/instance/authUser/getEmail.do",method = {RequestMethod.POST})
-    public ApiResult<Object> getEmail()
-            throws CommonException
-    {
-        return ApiResult.getSuccess(authUserService.getUserEmail(AuthContext.getUserInfoInnerVO()));
-    }
+	////////////////邮件重置密码/////////////////////
 
 	@RequestMapping(path = "/admin/auth/auhtUser/sandResetMail.do",method = {RequestMethod.POST})
 	public ApiResult sandResetEmail(@RequestBody EmailInVO email){
