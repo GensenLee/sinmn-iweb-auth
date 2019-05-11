@@ -13,7 +13,7 @@ import com.sinmn.core.utils.util.*;
 import com.sinmn.core.utils.util.email.EmailUtil;
 import com.sinmn.core.utils.vo.EmailHostVO;
 import com.sinmn.iweb.auth.util.ResetVerifyUtil;
-import com.sinmn.iweb.auth.vo.inVO.AuthUserResetInVO;
+import com.sinmn.iweb.auth.vo.inVO.*;
 import com.sinmn.iweb.auth.vo.innerVO.AuthUserResetVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,8 +38,6 @@ import com.sinmn.iweb.auth.repository.AuthCompanyRepository;
 import com.sinmn.iweb.auth.repository.AuthLoginLogRepository;
 import com.sinmn.iweb.auth.repository.AuthUserRepository;
 import com.sinmn.iweb.auth.util.PasswdUtil;
-import com.sinmn.iweb.auth.vo.inVO.AuthLoginInVO;
-import com.sinmn.iweb.auth.vo.inVO.AuthUserRepasswdInVO;
 import com.sinmn.iweb.auth.vo.innerVO.UserInfoInnerVO;
 import com.sinmn.iweb.auth.vo.searchVO.AuthUserSearchVO;
 
@@ -307,7 +305,7 @@ public class AuthUserService {
     }
 
 
-    public Object reName(AuthUserRenameInVO vo,UserInfoInnerVO userInfoInnerVO){
+    public Object reName(AuthUserRenameInVO vo, UserInfoInnerVO userInfoInnerVO){
         VerifyUtil.verify(vo);
         if (userInfoInnerVO.getUserName().equals(vo.getNewName())) {
             return null;
@@ -323,7 +321,7 @@ public class AuthUserService {
      * @param vo
      * @return
      */
-    public Object reNew(AuthUserRenewInVO vo,UserInfoInnerVO userInfoInnerVO) throws CommonException {
+    public Object reNew(AuthUserRenewInVO vo, UserInfoInnerVO userInfoInnerVO) throws CommonException {
         VerifyUtil.verify(vo);
         AuthUser authUser = authUserRepository.get(userInfoInnerVO.getUserId());
 
