@@ -13,7 +13,7 @@ import com.sinmn.core.utils.util.*;
 import com.sinmn.core.utils.util.email.EmailUtil;
 import com.sinmn.core.utils.vo.EmailHostVO;
 import com.sinmn.iweb.auth.util.ResetVerifyUtil;
-import com.sinmn.iweb.auth.vo.inVO.*;
+import com.sinmn.iweb.auth.vo.inVO.AuthUserResetInVO;
 import com.sinmn.iweb.auth.vo.innerVO.AuthUserResetVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +29,7 @@ import com.sinmn.iweb.auth.model.AuthAppInstance;
 import com.sinmn.iweb.auth.model.AuthAppUserInstance;
 import com.sinmn.iweb.auth.model.AuthCompany;
 import com.sinmn.iweb.auth.model.AuthLoginLog;
+import com.sinmn.iweb.auth.model.AuthRole;
 import com.sinmn.iweb.auth.model.AuthUser;
 import com.sinmn.iweb.auth.redis.IWebAuthRedisDao;
 import com.sinmn.iweb.auth.repository.AuthAppRepository;
@@ -37,6 +38,8 @@ import com.sinmn.iweb.auth.repository.AuthCompanyRepository;
 import com.sinmn.iweb.auth.repository.AuthLoginLogRepository;
 import com.sinmn.iweb.auth.repository.AuthUserRepository;
 import com.sinmn.iweb.auth.util.PasswdUtil;
+import com.sinmn.iweb.auth.vo.inVO.AuthLoginInVO;
+import com.sinmn.iweb.auth.vo.inVO.AuthUserRepasswdInVO;
 import com.sinmn.iweb.auth.vo.innerVO.UserInfoInnerVO;
 import com.sinmn.iweb.auth.vo.searchVO.AuthUserSearchVO;
 
@@ -46,139 +49,141 @@ import lombok.extern.log4j.Log4j;
 @Service
 public class AuthUserService {
 
-    @Autowired
-    private AuthUserRepository authUserRepository;
+	@Autowired
+	private AuthUserRepository authUserRepository;
 
-    @Autowired
-    private AuthAppUserInstanceRepository authAppUserInstanceRepository;
+	@Autowired
+	private AuthAppUserInstanceRepository authAppUserInstanceRepository;
 
-    @Autowired
-    private AuthAppRepository authAppRepository;
+	@Autowired
+	private AuthAppRepository authAppRepository;
 
-    @Autowired
-    private AuthCompanyRepository authCompanyRepository;
+	@Autowired
+	private AuthCompanyRepository authCompanyRepository;
 
-    @Autowired
-    private IWebAuthRedisDao iWebAuthRedisDao;
+	@Autowired
+	private IWebAuthRedisDao iWebAuthRedisDao;
 
-    @Autowired
-    private AuthLoginLogRepository authLoginLogRepository;
-
-
-    private static String targetIp;
-
-    static {
-        try {
-            InetAddress addr = InetAddress.getLocalHost();
-            targetIp = addr.getHostAddress().toString(); //获取本机ip
-        } catch (Exception e) {
-        }
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public Object list(AuthUserSearchVO svo, UserInfoInnerVO userInfoInnerVO) throws CommonException {
-        ModelWhere mw = new ModelWhere();
-
-        if (StringUtil.isNotEmpty(svo.getQuickSearch())) {
-        }
-
-        if (LongUtil.isZero(svo.getCompanyId())) {
-            mw.add(AuthUser.COMPANY_ID, userInfoInnerVO.getCompanyId());
-        } else if (LongUtil.toLong(svo.getCompanyId()) != AuthConstant.Common.ALL) {
-            mw.add(AuthUser.COMPANY_ID, svo.getCompanyId());
-        }
-
-        List<AuthUser> liAuthUser = authUserRepository.where(mw)
-                .orderBy(AuthUser.ID, "DESC")
-                .limit(svo.getStart(), svo.getSize()).list();
-
-        List<Map<String, Object>> listMap = MapUtil.toMapListResultExclude(liAuthUser, AuthUser.PASSWD);
-        PageResult pr = PageResult.get();
-        pr.setList(listMap);
-        pr.setCount(authUserRepository.where(mw).count());
-
-        return pr;
-    }
+	@Autowired
+	private AuthLoginLogRepository authLoginLogRepository;
 
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public Object login(AuthLoginInVO authLoginInVO, HttpServletRequest req) throws CommonException {
 
-        //验证
-        VerifyUtil.verify(authLoginInVO);
+	private static String targetIp;
 
-        //登录成功,插入登录日志
-        AuthLoginLog authLoginLog = new AuthLoginLog();
+	static {
+		try {
+			InetAddress addr = InetAddress.getLocalHost();
+			targetIp = addr.getHostAddress().toString(); //获取本机ip
+		} catch (Exception e) {
+		}
+	}
 
-        AuthUser authUser = authUserRepository
-                .where(AuthUser.ACCOUNT, authLoginInVO.getAccount())
-                .or(AuthUser.EMAIL, authLoginInVO.getAccount())
-                .get();
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public Object list(AuthUserSearchVO svo,UserInfoInnerVO userInfoInnerVO) throws CommonException{
+		ModelWhere mw = new ModelWhere();
 
-        if (authUser == null) {
-            throw new CommonException("账号错误");
-        }
+		if(StringUtil.isNotEmpty(svo.getQuickSearch())){
+			mw.add(AuthUser.NAME,svo.getQuickSearch(),ModelOperator.LIKE);
+		}
 
-        if (authUser.getIsActive() == AuthConstant.Common.NO) {
-            throw new CommonException("账号已经被冻结，请联系管理员激活账号");
-        }
+		if(LongUtil.isZero(svo.getCompanyId())){
+			mw.add(AuthUser.COMPANY_ID,userInfoInnerVO.getCompanyId());
+		}else if(LongUtil.toLong(svo.getCompanyId()) != AuthConstant.Common.ALL){
+			mw.add(AuthUser.COMPANY_ID,svo.getCompanyId());
+		}
 
-        if (authUser.getTryCount() >= 6) {
-            throw new CommonException("密码输入错误次数过多，账号已经被封停，请联系系统管理人员解封");
-        }
+		List<AuthUser> liAuthUser = authUserRepository.where(mw)
+				.orderBy(AuthUser.ID,"DESC")
+				.limit(svo.getStart(),svo.getSize()).list();
 
-        authLoginLog.setCompanyId(authUser.getCompanyId());
-        authLoginLog.setCreateTime(new Date());
-        authLoginLog.setStatus(AuthConstant.Common.NO);
-        authLoginLog.setTargetIp(targetIp);
-        authLoginLog.setUserId(authUser.getId());
-        authLoginLog.setIp(IPUtil.getIpAddr(req));
-        authLoginLog.setAccount(authLoginInVO.getAccount());
-        authLoginLog.setAddress(IPUtil.getIpRealAddr(authLoginLog.getIp()));
+		List<Map<String,Object>> listMap = MapUtil.toMapListResultExclude(liAuthUser,AuthUser.PASSWD);
+		PageResult pr = PageResult.get();
+		pr.setList(listMap);
+		pr.setCount(authUserRepository.where(mw).count());
 
-        if (!PasswdUtil.getPasswd(authLoginInVO.getPasswd(), authUser.getPasswdSuffix()).equals(authUser.getPasswd())) {
-            authUser.setTryCount(authUser.getTryCount() + 1);
-            if (authUser.getTryCount() >= 6) {
-                authUser.setIsActive(AuthConstant.Common.NO);
-            }
-            authUserRepository.include(AuthUser.TRY_COUNT, AuthUser.IS_ACTIVE).update(authUser);
-            String message = "";
-            if (authUser.getTryCount() > 2) {
-                message = String.format("输入错误 %d 次,你还有 %d 次机会", authUser.getTryCount(), 6 - authUser.getTryCount());
-            }
-            authLoginLog.setReason("密码错误:" + authLoginInVO.getPasswd());
-            authLoginLogRepository.insert(authLoginLog);
-            throw new CommonException("密码错误" + message);
-        }
-        authUser.setTryCount(0);
-        authUserRepository.include(AuthUser.TRY_COUNT).update(authUser);
+		return pr;
+	}
 
-        String sessionKey = UUID.randomUUID().toString().replaceAll("-", "");
 
-        UserInfoInnerVO userInfoInnerVO = new UserInfoInnerVO();
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Object login(AuthLoginInVO authLoginInVO,HttpServletRequest req) throws CommonException{
 
-        userInfoInnerVO.setSessionKey(sessionKey);
-        userInfoInnerVO.setUserId(authUser.getId());
-        userInfoInnerVO.setCompanyId(authUser.getCompanyId());
-        userInfoInnerVO.setUserName(authUser.getName());
+		//验证
+		VerifyUtil.verify(authLoginInVO);
 
-        //判断用户是否只有一个实例，如果只有一个实例，直接跳转
-        List<AuthAppUserInstance> liAuthAppUserInstance = authAppUserInstanceRepository
-                .where(AuthAppUserInstance.DEL_FLAG, AuthConstant.Common.NO)
-                .where(AuthAppUserInstance.USER_ID, authUser.getId())
-                .list();
-        Map mapResult = new HashMap<String, Object>();
-        if (liAuthAppUserInstance.size() == 1) {
-            mapResult = authAppRepository.join(liAuthAppUserInstance.get(0),
-                    AuthAppUserInstance.APP_ID, AuthAppInstance.ID,
-                    AuthApp.CN_NAME, "appName",
-                    AuthApp.URL, "url")
-                    .get(Map.class);
-            userInfoInnerVO.setUserInstanceId(liAuthAppUserInstance.get(0).getId());
-        }
+		//登录成功,插入登录日志
+		AuthLoginLog authLoginLog = new AuthLoginLog();
 
-        //登陆
-        iWebAuthRedisDao.set(userInfoInnerVO);
+		AuthUser authUser = authUserRepository
+				.where(AuthUser.ACCOUNT,authLoginInVO.getAccount())
+				.or(AuthUser.EMAIL,authLoginInVO.getAccount())
+				.get();
+
+		if(authUser == null){
+			throw new CommonException("账号错误");
+		}
+
+		if(authUser.getIsActive() == AuthConstant.Common.NO){
+			throw new CommonException("账号已经被冻结，请联系管理员激活账号");
+		}
+
+		if(authUser.getTryCount() >= 6){
+			throw new CommonException("密码输入错误次数过多，账号已经被封停，请联系系统管理人员解封");
+		}
+
+		authLoginLog.setCompanyId(authUser.getCompanyId());
+		authLoginLog.setCreateTime(new Date());
+		authLoginLog.setStatus(AuthConstant.Common.NO);
+		authLoginLog.setTargetIp(targetIp);
+		authLoginLog.setUserId(authUser.getId());
+		authLoginLog.setIp(IPUtil.getIpAddr(req));
+		authLoginLog.setAccount(authLoginInVO.getAccount());
+		authLoginLog.setAddress(IPUtil.getIpRealAddr(authLoginLog.getIp()));
+
+		if(!PasswdUtil.getPasswd(authLoginInVO.getPasswd(), authUser.getPasswdSuffix()).equals(authUser.getPasswd())){
+			authUser.setTryCount(authUser.getTryCount() + 1);
+			if(authUser.getTryCount() >= 6){
+				authUser.setIsActive(AuthConstant.Common.NO);
+			}
+			authUserRepository.include(AuthUser.TRY_COUNT,AuthUser.IS_ACTIVE).update(authUser);
+			String message = "";
+			if(authUser.getTryCount() > 2){
+				message = String.format("输入错误 %d 次,你还有 %d 次机会",authUser.getTryCount(), 6-authUser.getTryCount());
+			}
+			authLoginLog.setReason("密码错误:"+authLoginInVO.getPasswd());
+			authLoginLogRepository.insert(authLoginLog);
+			throw new CommonException("密码错误"+message);
+		}
+		authUser.setTryCount(0);
+		authUserRepository.include(AuthUser.TRY_COUNT).update(authUser);
+
+		String sessionKey = UUID.randomUUID().toString().replaceAll("-", "");
+
+		UserInfoInnerVO userInfoInnerVO = new UserInfoInnerVO();
+
+		userInfoInnerVO.setSessionKey(sessionKey);
+		userInfoInnerVO.setUserId(authUser.getId());
+		userInfoInnerVO.setCompanyId(authUser.getCompanyId());
+		userInfoInnerVO.setUserName(authUser.getName());
+
+		//判断用户是否只有一个实例，如果只有一个实例，直接跳转
+		List<AuthAppUserInstance> liAuthAppUserInstance = authAppUserInstanceRepository
+				.where(AuthAppUserInstance.DEL_FLAG,AuthConstant.Common.NO)
+				.where(AuthAppUserInstance.USER_ID,authUser.getId())
+				.list();
+		Map mapResult = new HashMap<String,Object>();
+		if(liAuthAppUserInstance.size() == 1){
+			mapResult = authAppRepository.join(liAuthAppUserInstance.get(0),
+					AuthAppUserInstance.APP_ID,AuthAppInstance.ID,
+					AuthApp.CN_NAME,"appName",
+					AuthApp.URL,"url")
+					.get(Map.class);
+			userInfoInnerVO.setUserInstanceId(liAuthAppUserInstance.get(0).getId());
+		}
+
+		//登陆
+		iWebAuthRedisDao.set(userInfoInnerVO);
 
         mapResult.put("userId", authUser.getId());
         mapResult.put("userName", authUser.getName());

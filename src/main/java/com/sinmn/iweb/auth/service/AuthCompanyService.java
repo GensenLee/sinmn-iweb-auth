@@ -8,9 +8,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sinmn.core.model.dto.ModelWhere;
+import com.sinmn.core.model.emun.ModelOperator;
 import com.sinmn.core.utils.exception.CommonException;
 import com.sinmn.core.utils.util.BeanUtil;
 import com.sinmn.core.utils.util.LongUtil;
+import com.sinmn.core.utils.util.StringUtil;
 import com.sinmn.core.utils.verify.VerifyUtil;
 import com.sinmn.core.utils.vo.PageResult;
 import com.sinmn.iweb.auth.model.AuthApp;
@@ -51,6 +53,9 @@ public class AuthCompanyService {
 		
 		ModelWhere mw = new ModelWhere();
 		
+		if(StringUtil.isNotEmpty(svo.getQuickSearch())){
+			mw.add(AuthCompany.NAME,svo.getQuickSearch(),ModelOperator.LIKE);
+		}
 		
 		List<AuthCompany> liAuthCompany = authCompanyRepository.where(mw)
 				.orderBy(AuthCompany.ID,"DESC")
@@ -66,6 +71,10 @@ public class AuthCompanyService {
 	public Object listAll(AuthCompanySearchVO svo) throws CommonException{
 		
 		ModelWhere mw = new ModelWhere();
+		
+		if(StringUtil.isNotEmpty(svo.getQuickSearch())){
+			mw.add(AuthCompany.NAME,svo.getQuickSearch(),ModelOperator.LIKE);
+		}
 		
 		return authCompanyRepository.where(mw)
 				.orderBy(AuthCompany.ID,"DESC")

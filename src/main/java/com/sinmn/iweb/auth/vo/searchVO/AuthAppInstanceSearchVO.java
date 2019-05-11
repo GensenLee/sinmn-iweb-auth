@@ -8,4 +8,5 @@ import lombok.Data;
 @Data
 public class AuthAppInstanceSearchVO  extends BaseSearchVO{
 
+	private Long appId;
 }
