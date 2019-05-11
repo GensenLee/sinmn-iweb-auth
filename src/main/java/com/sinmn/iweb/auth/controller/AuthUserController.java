@@ -7,6 +7,7 @@ import com.sinmn.core.utils.util.IntUtil;
 import com.sinmn.core.utils.util.StringUtil;
 import com.sinmn.iweb.auth.vo.inVO.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import com.sinmn.core.utils.exception.CommonException;
@@ -27,7 +28,11 @@ public class AuthUserController {
 
 	@Autowired
 	private AuthUserService authUserService;
-	
+
+
+    @Value("${sysUrl}")
+    private String sysUrl;
+
 
 	@RequestMapping(path ="/admin/auth/common/authUser/login.do",method = {RequestMethod.POST})
 	public ApiResult<Object> login(@RequestBody AuthLoginInVO authLoginInVO,HttpServletRequest req)
@@ -117,7 +122,7 @@ public class AuthUserController {
         }
         String userResetToken = (String) authUserService.getUserResetToken(userId);
 
-        response.sendRedirect("http://admin.polyv.sinmn.cn/resetPwd.html?k="+userResetToken+"&t1="+resetToken1+"&t2="+resetToken2);
+        response.sendRedirect(sysUrl + "/resetPwd.html?k="+userResetToken+"&t1="+resetToken1+"&t2="+resetToken2);
         return ApiResult.getSuccess("发送成功");
     }
 
