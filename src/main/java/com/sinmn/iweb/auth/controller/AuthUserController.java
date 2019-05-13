@@ -1,21 +1,24 @@
 package com.sinmn.iweb.auth.controller;
 
 import com.sinmn.core.utils.exception.CommonException;
-import com.sinmn.core.utils.util.StringUtil;
 import com.sinmn.core.utils.vo.ApiResult;
 import com.sinmn.iweb.auth.context.AuthContext;
 import com.sinmn.iweb.auth.model.AuthUser;
 import com.sinmn.iweb.auth.resource.AuthResource;
 import com.sinmn.iweb.auth.service.AuthUserService;
-import com.sinmn.iweb.auth.vo.inVO.*;
+import com.sinmn.iweb.auth.vo.inVO.AuthLoginInVO;
+import com.sinmn.iweb.auth.vo.inVO.AuthUserRenameInVO;
+import com.sinmn.iweb.auth.vo.inVO.AuthUserRenewInVO;
+import com.sinmn.iweb.auth.vo.inVO.AuthUserRepasswdInVO;
 import com.sinmn.iweb.auth.vo.searchVO.AuthUserSearchVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 @RestController
 @AuthResource(appId = 1)
@@ -84,50 +87,6 @@ public class AuthUserController {
 		return ApiResult.getSuccess(authUserService.active(authUser,AuthContext.getUserInfoInnerVO()));
 	}
 
-	////////////////邮件重置密码/////////////////////
-
-	@RequestMapping(path = "/admin/auth/auhtUser/sandResetMail.do",method = {RequestMethod.POST})
-	public ApiResult sandResetEmail(@RequestBody EmailInVO email){
-        if (StringUtil.isEmpty(email.getEmail())) {
-            return ApiResult.getFailed("邮箱错误");
-        }
-        Object sandResetMail = authUserService.sandResetMail(email.getEmail());
-        if (StringUtil.isEmpty(sandResetMail)) {
-            return ApiResult.getSuccess("发送成功!");
-        }
-        return ApiResult.getFailed((String) sandResetMail);
-    }
-
-	@RequestMapping(path ="/reset/{userid}/{token1}/{token2}",method = {RequestMethod.GET} )
-	public ApiResult<Object> emailResetUser(HttpServletResponse response, @PathVariable(name = "userid") String userId, @PathVariable(name = "token1") String resetToken1, @PathVariable(name = "token2") String resetToken2) throws IOException {
-        if (StringUtil.isEmpty(userId)||StringUtil.isEmpty(resetToken1)||StringUtil.isEmpty(resetToken2)) {
-            return ApiResult.getFailed("请求异常");
-        }
-        AuthUserResetInVO authUserResetInVO = new AuthUserResetInVO();
-        authUserResetInVO.setUserId(userId);
-        authUserResetInVO.setResetToken1(resetToken1);
-        authUserResetInVO.setResetToken2(resetToken2);
-        Object verifyResetReq = authUserService.verifyResetReq(authUserResetInVO);
-        if (StringUtil.isNotEmpty(verifyResetReq)) {
-            return ApiResult.getFailed((String)verifyResetReq);
-        }
-        String userResetToken = (String) authUserService.getUserResetToken(userId);
-
-        response.sendRedirect(sysUrl + "/resetPwd.html?k="+userResetToken+"&t1="+resetToken1+"&t2="+resetToken2);
-        return ApiResult.getSuccess("发送成功");
-    }
-
-    @RequestMapping(path = "/admin/auth/auhtUser/reset.do",method = {RequestMethod.POST})
-    public ApiResult resetPwd(@RequestBody AuthUserResetInVO vo){
-        if (StringUtil.isEmpty(vo.getResetKey())) {
-            return ApiResult.getFailed("请求异常");
-        }
-        Object verifyResetReq = authUserService.verifyResetReq2(vo);
-        if (StringUtil.isNotEmpty(verifyResetReq)) {
-            return ApiResult.getFailed((String)verifyResetReq);
-        }
-        return ApiResult.getSuccess((String)authUserService.updatePwd(vo));
-    }
 
 
 	

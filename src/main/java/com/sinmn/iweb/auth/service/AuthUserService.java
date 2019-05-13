@@ -1,48 +1,29 @@
 package com.sinmn.iweb.auth.service;
 
-import java.net.InetAddress;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.servlet.http.HttpServletRequest;
-
-import com.sinmn.core.utils.util.*;
-import com.sinmn.core.utils.util.email.EmailUtil;
-import com.sinmn.core.utils.vo.EmailHostVO;
-import com.sinmn.iweb.auth.util.ResetVerifyUtil;
-import com.sinmn.iweb.auth.vo.inVO.*;
-import com.sinmn.iweb.auth.vo.innerVO.AuthUserResetVO;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import com.sinmn.core.model.dto.ModelWhere;
 import com.sinmn.core.model.emun.ModelOperator;
 import com.sinmn.core.utils.exception.CommonException;
+import com.sinmn.core.utils.util.*;
 import com.sinmn.core.utils.verify.VerifyUtil;
 import com.sinmn.core.utils.vo.PageResult;
 import com.sinmn.iweb.auth.constant.AuthConstant;
-import com.sinmn.iweb.auth.model.AuthApp;
-import com.sinmn.iweb.auth.model.AuthAppInstance;
-import com.sinmn.iweb.auth.model.AuthAppUserInstance;
-import com.sinmn.iweb.auth.model.AuthCompany;
-import com.sinmn.iweb.auth.model.AuthLoginLog;
-import com.sinmn.iweb.auth.model.AuthRole;
-import com.sinmn.iweb.auth.model.AuthUser;
+import com.sinmn.iweb.auth.model.*;
 import com.sinmn.iweb.auth.redis.IWebAuthRedisDao;
-import com.sinmn.iweb.auth.repository.AuthAppRepository;
-import com.sinmn.iweb.auth.repository.AuthAppUserInstanceRepository;
-import com.sinmn.iweb.auth.repository.AuthCompanyRepository;
-import com.sinmn.iweb.auth.repository.AuthLoginLogRepository;
-import com.sinmn.iweb.auth.repository.AuthUserRepository;
+import com.sinmn.iweb.auth.repository.*;
 import com.sinmn.iweb.auth.util.PasswdUtil;
+import com.sinmn.iweb.auth.vo.inVO.AuthLoginInVO;
+import com.sinmn.iweb.auth.vo.inVO.AuthUserRenameInVO;
+import com.sinmn.iweb.auth.vo.inVO.AuthUserRenewInVO;
+import com.sinmn.iweb.auth.vo.inVO.AuthUserRepasswdInVO;
 import com.sinmn.iweb.auth.vo.innerVO.UserInfoInnerVO;
 import com.sinmn.iweb.auth.vo.searchVO.AuthUserSearchVO;
-
 import lombok.extern.log4j.Log4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
+import java.net.InetAddress;
+import java.util.*;
 
 @Log4j
 @Service
@@ -66,8 +47,6 @@ public class AuthUserService {
 	@Autowired
 	private AuthLoginLogRepository authLoginLogRepository;
 
-    @Value("${sysUrl}")
-    private String sysUrl;
 
 	private static String targetIp;
 
@@ -370,92 +349,5 @@ public class AuthUserService {
         return authUser;
     }
 
-
-    public Object getUserEmail(UserInfoInnerVO userInfoInnerVO){
-        AuthUser user = authUserRepository.get(userInfoInnerVO.getUserId());
-        Map<String,String> map = new HashMap<String, String>();
-        map.put("email",user.getEmail());
-        return map;
-    }
-
-
-    public Object sandResetMail(String email) {
-
-        AuthUser user = authUserRepository.where(AuthUser.EMAIL, email).get();
-        if (user == null) {
-            return "找不到用户信息";
-        }
-
-        String token1 = ResetVerifyUtil.randomToken(108);
-        String token2 = ResetVerifyUtil.randomToken(91);
-
-        AuthUserResetVO vo = new AuthUserResetVO(String.valueOf(user.getId()), token1, token2);
-        iWebAuthRedisDao.setUserResetVO(vo);
-
-        EmailHostVO emailHostVO = new EmailHostVO("smtp.163.com", "sinmn_test@163.com", "sinmn888", "测试邮件:ccb");
-        EmailUtil.setVO(emailHostVO);
-        EmailUtil.send(email, "密码重置",
-                "请在12小时内访问链接重置密码\n " + sysUrl + "/reset/" + user.getId() + "/" + token1 + "/" + token2 + "</a>");
-        return null;
-    }
-
-
-    /**
-     * 验证重置密码请求，12小时内有效
-     *
-     * @param vo
-     * @return
-     */
-    public Object verifyResetReq(AuthUserResetInVO vo) {
-        AuthUserResetVO authUserResetVO = new AuthUserResetVO(vo.getUserId(), vo.getResetToken1(), vo.getResetToken2());
-        AuthUserResetVO userResetVO = iWebAuthRedisDao.getUserResetVO(vo.getUserId());
-        String verify = ResetVerifyUtil.verify(authUserResetVO, userResetVO);
-        if (!StringUtil.isEmpty(verify)) {
-            return verify;
-        }
-        return null;
-    }
-
-    public Object verifyResetReq2(AuthUserResetInVO vo) {
-        String userId = iWebAuthRedisDao.getByKey(vo.getResetKey());
-        if (StringUtil.isEmpty(userId)) {
-            return "密码更新操作已经过期";
-        }
-        vo.setUserId(userId);
-        AuthUserResetVO authUserResetVO = new AuthUserResetVO(vo.getUserId(), vo.getResetToken1(), vo.getResetToken2());
-        AuthUserResetVO userResetVO = iWebAuthRedisDao.getUserResetVO(vo.getUserId());
-        String verify = ResetVerifyUtil.verify(authUserResetVO, userResetVO);
-        if (!StringUtil.isEmpty(verify)) {
-            return verify;
-        }
-        return null;
-    }
-
-    /**生成user重置密码请求参数
-     * @param userId
-     * @return
-     */
-    public Object getUserResetToken(String userId){
-        String randomToken = ResetVerifyUtil.randomToken(12);
-        iWebAuthRedisDao.set(randomToken,userId);
-        return randomToken;
-    }
-
-    /**
-     * 通过邮件中的url重置密码
-     *
-     * @param vo
-     * @return
-     */
-    public Object updatePwd(AuthUserResetInVO vo) {
-        AuthUser authUser = authUserRepository.get(vo.getUserId());
-        authUser.setPasswdSuffix(UUID.randomUUID().toString().replaceAll("-", ""));
-        authUser.setPasswd(PasswdUtil.getPasswd(vo.getNewPasswd(), authUser.getPasswdSuffix()));
-        authUser.setModifyTime(DateUtil.getNowTime());
-        authUserRepository.include(AuthUser.PASSWD,AuthUser.PASSWD_SUFFIX,AuthUser.MODIFY_TIME).update(authUser);
-        iWebAuthRedisDao.set(vo.getResetKey(),"");
-        iWebAuthRedisDao.removeUserResetVO(vo.getUserId());
-        return "密码重置成功";
-    }
 
 }
