@@ -81,7 +81,6 @@ public class InstanceAuthInterceptor extends AbstractInterceptor {
 			sessionKey = request.getParameter("session-key");
 		}
 		
-		
 		if(StringUtil.isEmpty(sessionKey)){
 			log.debug("[{} preHandle] sessionKey",this.getClass().getSimpleName());
 			//无效用户

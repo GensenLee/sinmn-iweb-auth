@@ -187,7 +187,7 @@ public class AuthUserService {
 		mapResult.put("userId", authUser.getId());
 		mapResult.put("userName", authUser.getName());
 		mapResult.put("sessionKey", sessionKey);
-		mapResult.put("toggle", liAuthAppUserInstance.size() > 1);
+		mapResult.put("toggle", liAuthAppUserInstance.size() != 1);
 		
 		authLoginLog.setStatus(AuthConstant.Common.YES);
 		authLoginLogRepository.insert(authLoginLog);
