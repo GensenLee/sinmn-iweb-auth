@@ -22,14 +22,8 @@ import javax.servlet.http.HttpServletRequest;
 @AuthResource(appId = 1)
 public class AuthUserController {
 
-
     @Autowired
     private AuthUserService authUserService;
-
-
-    @Value("${sysUrl}")
-    private String sysUrl;
-
 
     @RequestMapping(path = "/admin/auth/common/authUser/login.do", method = {RequestMethod.POST})
     public ApiResult<Object> login(@RequestBody AuthLoginInVO authLoginInVO, HttpServletRequest req)
@@ -63,6 +57,4 @@ public class AuthUserController {
             throws CommonException {
         return ApiResult.getSuccess(authUserService.active(authUser, AuthContext.getUserInfoInnerVO()));
     }
-
-
 }
