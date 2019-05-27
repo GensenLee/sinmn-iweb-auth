@@ -68,6 +68,12 @@ public class UserAuthInterceptor extends AbstractInterceptor {
 		}
 		
 		String sessionKey = request.getHeader("session-key");
+		if(StringUtil.isEmpty(sessionKey)){
+			sessionKey = request.getParameter("sessionKey");
+		}
+		if(StringUtil.isEmpty(sessionKey)){
+			sessionKey = request.getParameter("session-key");
+		}
 		
 		if(StringUtil.isEmpty(sessionKey)){
 			log.debug("[{} preHandle] sessionKey",this.getClass().getSimpleName());
