@@ -81,6 +81,7 @@ public class AuthAppUserInstanceService {
 		mapResult = authAppRepository.join(mapResult,
 				StringUtil.toLHCase(AuthAppUserInstance.APP_ID),AuthAppInstance.ID,
 				AuthApp.CN_NAME,"appName",
+				AuthApp.CODE,"appCode",
 				AuthApp.URL,"url")
 				.list(Map.class);
 		
